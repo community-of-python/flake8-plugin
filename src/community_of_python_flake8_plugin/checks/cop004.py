@@ -4,7 +4,7 @@ import typing
 
 from community_of_python_flake8_plugin.constants import FINAL_CLASS_EXCLUDED_BASES, MIN_NAME_LENGTH
 from community_of_python_flake8_plugin.utils import find_parent_class_definition
-from community_of_python_flake8_plugin.violation_codes import ViolationCode
+from community_of_python_flake8_plugin.violation_codes import ViolationCodes as ViolationCode
 from community_of_python_flake8_plugin.violations import Violation
 
 
@@ -89,7 +89,7 @@ class COP004Check(ast.NodeVisitor):
             self.validate_class_name_length(ast_node)
         self.generic_visit(ast_node)
 
-    def validate_name_length(self, identifier: str, ast_node: ast.AST, parent_class: ast.ClassDef | None) -> None:
+    def validate_name_length(self, identifier: str, ast_node: ast.stmt, parent_class: ast.ClassDef | None) -> None:
         if check_is_ignored_name(identifier):
             return
         # Only apply parent class exemption for assignments within classes
@@ -100,7 +100,13 @@ class COP004Check(ast.NodeVisitor):
         ):
             return
         if len(identifier) < MIN_NAME_LENGTH:
-            self.violations.append(Violation(ast_node.lineno, ast_node.col_offset, ViolationCode.NAME_LENGTH))
+            self.violations.append(
+                Violation(
+                    line_number=ast_node.lineno,
+                    column_number=ast_node.col_offset,
+                    violation_code=ViolationCode.NAME_LENGTH,
+                )
+            )
 
     def validate_function_name(
         self, ast_node: ast.FunctionDef | ast.AsyncFunctionDef, parent_class: ast.ClassDef | None
@@ -114,7 +120,13 @@ class COP004Check(ast.NodeVisitor):
         if check_is_pytest_fixture(ast_node):
             return
         if len(ast_node.name) < MIN_NAME_LENGTH:
-            self.violations.append(Violation(ast_node.lineno, ast_node.col_offset, ViolationCode.NAME_LENGTH))
+            self.violations.append(
+                Violation(
+                    line_number=ast_node.lineno,
+                    column_number=ast_node.col_offset,
+                    violation_code=ViolationCode.NAME_LENGTH,
+                )
+            )
 
     def validate_function_args(self, ast_node: ast.FunctionDef | ast.AsyncFunctionDef) -> None:
         arguments: typing.Final = ast_node.args
@@ -125,7 +137,7 @@ class COP004Check(ast.NodeVisitor):
         if arguments.kwarg is not None:
             self.validate_argument_name_length(arguments.kwarg)
 
-    def validate_argument_name_length(self, argument: ast.argument_name) -> None:
+    def validate_argument_name_length(self, argument: ast.arg) -> None:
         if argument.arg in {"self", "cls"}:
             return
         if check_is_ignored_name(argument.arg):
@@ -133,10 +145,22 @@ class COP004Check(ast.NodeVisitor):
         if check_is_whitelisted_annotation(argument.annotation):
             return
         if len(argument.arg) < MIN_NAME_LENGTH:
-            self.violations.append(Violation(argument.lineno, argument.col_offset, ViolationCode.NAME_LENGTH))
+            self.violations.append(
+                Violation(
+                    line_number=argument.lineno,
+                    column_number=argument.col_offset,
+                    violation_code=ViolationCode.NAME_LENGTH,
+                )
+            )
 
     def validate_class_name_length(self, ast_node: ast.ClassDef) -> None:
         if check_is_ignored_name(ast_node.name):
             return
         if len(ast_node.name) < MIN_NAME_LENGTH:
-            self.violations.append(Violation(ast_node.lineno, ast_node.col_offset, ViolationCode.NAME_LENGTH))
+            self.violations.append(
+                Violation(
+                    line_number=ast_node.lineno,
+                    column_number=ast_node.col_offset,
+                    violation_code=ViolationCode.NAME_LENGTH,
+                )
+            )

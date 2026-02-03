@@ -2,7 +2,7 @@ from __future__ import annotations
 import ast
 import typing
 
-from community_of_python_flake8_plugin.violation_codes import ViolationCode
+from community_of_python_flake8_plugin.violation_codes import ViolationCodes as ViolationCode
 from community_of_python_flake8_plugin.violations import Violation
 
 
@@ -47,5 +47,9 @@ class COP007Check(ast.NodeVisitor):
                 identifier = statement.value.id
                 if len(assigned.get(identifier, [])) == 1 and load_counts.get(identifier, 0) == 1:
                     self.violations.append(
-                        Violation(statement.lineno, statement.col_offset, ViolationCode.TEMPORARY_VARIABLE)
+                        Violation(
+                            line_number=statement.lineno,
+                            column_number=statement.col_offset,
+                            violation_code=ViolationCode.TEMPORARY_VARIABLE,
+                        )
                     )

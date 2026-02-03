@@ -16,13 +16,13 @@ from community_of_python_flake8_plugin.utils import check_module_has_all_declara
 
 
 if typing.TYPE_CHECKING:
-    import ast
-
     from community_of_python_flake8_plugin.violations import Violation
 
 
 def execute_all_validations(syntax_tree: ast.AST) -> list[Violation]:
-    contains_all_declaration: typing.Final = check_module_has_all_declaration(syntax_tree)
+    contains_all_declaration: typing.Final = (
+        check_module_has_all_declaration(syntax_tree) if isinstance(syntax_tree, ast.Module) else False
+    )
     collected_violations: typing.Final[list[Violation]] = []
 
     # COP001: Use module import when importing more than two names

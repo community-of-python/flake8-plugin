@@ -3,7 +3,7 @@ import ast
 import typing
 from importlib import util as importlib_util
 
-from community_of_python_flake8_plugin.violation_codes import ViolationCode
+from community_of_python_flake8_plugin.violation_codes import ViolationCodes as ViolationCode
 from community_of_python_flake8_plugin.violations import Violation
 
 
@@ -33,18 +33,21 @@ class COP001Check(ast.NodeVisitor):
             return
         if self.contains_all_declaration:
             return
-        if ast_node.module.endswith(".settings"):
+        module_name: typing.Final = ast_node.module
+        if module_name is not None and module_name.endswith(".settings"):
             return
 
         contains_module_import: typing.Final = any(
-            isinstance(identifier, ast.alias) and check_module_path_exists(f"{ast_node.module}.{identifier.identifier}")
+            isinstance(identifier, ast.alias)
+            and module_name is not None
+            and check_module_path_exists(f"{module_name}.{identifier.name}")
             for identifier in ast_node.names
         )
         if not contains_module_import:
             self.violations.append(
                 Violation(
-                    ast_node.lineno,
-                    ast_node.col_offset,
-                    ViolationCode.MODULE_IMPORT,
+                    line_number=ast_node.lineno,
+                    column_number=ast_node.col_offset,
+                    violation_code=ViolationCode.MODULE_IMPORT,
                 )
             )

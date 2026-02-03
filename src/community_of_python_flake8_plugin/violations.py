@@ -8,7 +8,7 @@ if typing.TYPE_CHECKING:
 
 
 @typing.final
-@dataclasses.dataclass(frozen=True)
+@dataclasses.dataclass(frozen=True, kw_only=True, slots=True)
 class Violation:
     line_number: int
     column_number: int

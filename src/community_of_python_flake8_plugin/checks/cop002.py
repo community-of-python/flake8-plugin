@@ -5,7 +5,7 @@ import typing
 from importlib import util as importlib_util
 
 from community_of_python_flake8_plugin.constants import ALLOWED_STDLIB_FROM_IMPORTS
-from community_of_python_flake8_plugin.violation_codes import ViolationCode
+from community_of_python_flake8_plugin.violation_codes import ViolationCodes as ViolationCode
 from community_of_python_flake8_plugin.violations import Violation
 
 
@@ -31,9 +31,18 @@ class COP002Check(ast.NodeVisitor):
         self.generic_visit(ast_node)
 
     def validate_stdlib_import(self, ast_node: ast.ImportFrom) -> None:
-        if ast_node.module == "__future__":
+        module_name: typing.Final = ast_node.module
+        if module_name is None:
             return
-        if (check_is_stdlib_module(ast_node.module) and not check_is_stdlib_package(ast_node.module)) or (
-            "." in ast_node.module and check_is_stdlib_package(ast_node.module.split(".")[0])
+        if module_name == "__future__":
+            return
+        if (check_is_stdlib_module(module_name) and not check_is_stdlib_package(module_name)) or (
+            "." in module_name and check_is_stdlib_package(module_name.split(".")[0])
         ):
-            self.violations.append(Violation(ast_node.lineno, ast_node.col_offset, ViolationCode.STDLIB_IMPORT))
+            self.violations.append(
+                Violation(
+                    line_number=ast_node.lineno,
+                    column_number=ast_node.col_offset,
+                    violation_code=ViolationCode.STDLIB_IMPORT,
+                )
+            )

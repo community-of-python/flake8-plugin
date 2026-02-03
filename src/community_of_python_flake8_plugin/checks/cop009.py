@@ -3,7 +3,7 @@ import ast
 import typing
 
 from community_of_python_flake8_plugin.constants import MAPPING_PROXY_TYPES
-from community_of_python_flake8_plugin.violation_codes import ViolationCode
+from community_of_python_flake8_plugin.violation_codes import ViolationCodes as ViolationCode
 from community_of_python_flake8_plugin.violations import Violation
 
 
@@ -18,10 +18,10 @@ def check_is_mapping_literal(value: ast.AST | None) -> bool:
 
 
 def check_is_typed_dict_call(value: ast.Call) -> bool:
-    if isinstance(value.function, ast.Name) and value.function.id == "TypedDict":
+    if isinstance(value.func, ast.Name) and value.func.id == "TypedDict":
         return True
-    if isinstance(value.function, ast.Attribute) and value.function.attr == "TypedDict":
-        return isinstance(value.function.value, ast.Name) and value.function.value.id in {
+    if isinstance(value.func, ast.Attribute) and value.func.attr == "TypedDict":
+        return isinstance(value.func.value, ast.Name) and value.func.value.id in {
             "typing",
             "typing_extensions",
         }
@@ -31,10 +31,10 @@ def check_is_typed_dict_call(value: ast.Call) -> bool:
 def check_is_mapping_proxy_call(value: ast.AST | None) -> bool:
     if not isinstance(value, ast.Call):
         return False
-    if isinstance(value.function, ast.Name):
-        return value.function.id in MAPPING_PROXY_TYPES
-    if isinstance(value.function, ast.Attribute):
-        return value.function.attr in MAPPING_PROXY_TYPES
+    if isinstance(value.func, ast.Name):
+        return value.func.id in MAPPING_PROXY_TYPES
+    if isinstance(value.func, ast.Attribute):
+        return value.func.attr in MAPPING_PROXY_TYPES
     return False
 
 
@@ -54,4 +54,10 @@ class COP009Check(ast.NodeVisitor):
             value = statement.value
 
         if value and check_is_mapping_literal(value) and not check_is_mapping_proxy_call(value):
-            self.violations.append(Violation(statement.lineno, statement.col_offset, ViolationCode.MAPPING_PROXY))
+            self.violations.append(
+                Violation(
+                    line_number=statement.lineno,
+                    column_number=statement.col_offset,
+                    violation_code=ViolationCode.MAPPING_PROXY,
+                )
+            )

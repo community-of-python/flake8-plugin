@@ -4,7 +4,7 @@ import typing
 
 from community_of_python_flake8_plugin.constants import FINAL_CLASS_EXCLUDED_BASES, VERB_PREFIXES
 from community_of_python_flake8_plugin.utils import find_parent_class_definition
-from community_of_python_flake8_plugin.violation_codes import ViolationCode
+from community_of_python_flake8_plugin.violation_codes import ViolationCodes as ViolationCode
 from community_of_python_flake8_plugin.violations import Violation
 
 
@@ -94,7 +94,13 @@ class COP005Check(ast.NodeVisitor):
         if len(ast_node.name) < min_acronym_length:  # Short names are likely acronyms or special cases
             return
 
-        self.violations.append(Violation(ast_node.lineno, ast_node.col_offset, ViolationCode.FUNCTION_VERB))
+        self.violations.append(
+            Violation(
+                line_number=ast_node.lineno,
+                column_number=ast_node.col_offset,
+                violation_code=ViolationCode.FUNCTION_VERB,
+            )
+        )
 
     def check_inherits_from_whitelisted_class(self, ast_node: ast.ClassDef) -> bool:
         for base_class in ast_node.bases:

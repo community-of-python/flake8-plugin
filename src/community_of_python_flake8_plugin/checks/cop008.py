@@ -3,7 +3,7 @@ import ast
 import typing
 
 from community_of_python_flake8_plugin.constants import FINAL_CLASS_EXCLUDED_BASES
-from community_of_python_flake8_plugin.violation_codes import ViolationCode
+from community_of_python_flake8_plugin.violation_codes import ViolationCodes as ViolationCode
 from community_of_python_flake8_plugin.violations import Violation
 
 
@@ -33,9 +33,9 @@ def check_inherits_from_whitelisted_class(ast_node: ast.ClassDef) -> bool:
 def retrieve_dataclass_decorator(ast_node: ast.ClassDef) -> ast.expr | None:
     for decorator in ast_node.decorator_list:
         target_name = decorator.func if isinstance(decorator, ast.Call) else decorator
-        if isinstance(target_name, ast.Name) and target_name.id == "dataclass_class":
+        if isinstance(target_name, ast.Name) and target_name.id == "dataclass":
             return decorator
-        if isinstance(target_name, ast.Attribute) and target_name.attr == "dataclass_class":
+        if isinstance(target_name, ast.Attribute) and target_name.attr == "dataclass":
             return decorator
     return None
 
@@ -60,4 +60,10 @@ class COP008Check(ast.NodeVisitor):
             and not ast_node.name.startswith("Test")
             and not check_inherits_from_whitelisted_class(ast_node)
         ):
-            self.violations.append(Violation(ast_node.lineno, ast_node.col_offset, ViolationCode.FINAL_CLASS))
+            self.violations.append(
+                Violation(
+                    line_number=ast_node.lineno,
+                    column_number=ast_node.col_offset,
+                    violation_code=ViolationCode.FINAL_CLASS,
+                )
+            )

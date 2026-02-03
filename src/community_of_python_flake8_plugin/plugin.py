@@ -21,7 +21,5 @@ class CommunityOfPythonFlake8Plugin:
     def run(self) -> Iterable[tuple[int, int, str, type[object]]]:  # noqa: COP004
         violations_list: typing.Final = execute_all_validations(self.ast_tree)
         for violation in violations_list:
-            violation_message = (
-                f"{violation.violation_code.value['code']} {violation.violation_code.value['description']}"
-            )
+            violation_message = f"{violation.violation_code.code} {violation.violation_code.description}"
             yield violation.line_number, violation.column_number, violation_message, type(self)

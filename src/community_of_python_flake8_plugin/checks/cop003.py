@@ -4,7 +4,7 @@ import typing
 
 from community_of_python_flake8_plugin.constants import SCALAR_ANNOTATIONS
 from community_of_python_flake8_plugin.utils import find_parent_class_definition
-from community_of_python_flake8_plugin.violation_codes import ViolationCode
+from community_of_python_flake8_plugin.violation_codes import ViolationCodes as ViolationCode
 from community_of_python_flake8_plugin.violations import Violation
 
 
@@ -67,4 +67,10 @@ class COP003Check(ast.NodeVisitor):
         if not check_is_literal_value(ast_node.value):
             return
         if check_is_scalar_annotation(ast_node.annotation):
-            self.violations.append(Violation(ast_node.lineno, ast_node.col_offset, ViolationCode.SCALAR_ANNOTATION))
+            self.violations.append(
+                Violation(
+                    line_number=ast_node.lineno,
+                    column_number=ast_node.col_offset,
+                    violation_code=ViolationCode.SCALAR_ANNOTATION,
+                )
+            )

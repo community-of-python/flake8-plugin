@@ -2,7 +2,7 @@ from __future__ import annotations
 import ast
 import typing
 
-from community_of_python_flake8_plugin.violation_codes import ViolationCode
+from community_of_python_flake8_plugin.violation_codes import ViolationCodes as ViolationCode
 from community_of_python_flake8_plugin.violations import Violation
 
 
@@ -63,4 +63,10 @@ class COP006Check(ast.NodeVisitor):
         if check_is_ignored_name(ast_node.name):
             return
         if ast_node.name.startswith("get_"):
-            self.violations.append(Violation(ast_node.lineno, ast_node.col_offset, ViolationCode.ASYNC_GET_PREFIX))
+            self.violations.append(
+                Violation(
+                    line_number=ast_node.lineno,
+                    column_number=ast_node.col_offset,
+                    violation_code=ViolationCode.ASYNC_GET_PREFIX,
+                )
+            )
