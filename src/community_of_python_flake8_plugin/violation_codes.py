@@ -1,12 +1,11 @@
 from __future__ import annotations
 import enum
 import typing
-from typing import TypedDict
 
 
 @typing.final
-class ViolationCodeItem(TypedDict):
-    code: str
+class ViolationCodeItem(typing.TypedDict):
+    code: str  # noqa: COP004
     description: str
 
 
