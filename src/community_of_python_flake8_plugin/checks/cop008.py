@@ -26,10 +26,7 @@ class COP008Check(ast.NodeVisitor):
         self.generic_visit(ast_node)
 
     def _check_final_decorator(self, ast_node: ast.ClassDef) -> None:
-        if (
-            not contains_final_decorator(ast_node)
-            and not ast_node.name.startswith("Test")
-        ):
+        if not contains_final_decorator(ast_node) and not ast_node.name.startswith("Test"):
             self.violations.append(
                 Violation(
                     line_number=ast_node.lineno,

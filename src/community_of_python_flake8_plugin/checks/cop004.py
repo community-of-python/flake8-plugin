@@ -100,11 +100,20 @@ class COP004Check(ast.NodeVisitor):
         ):
             return
         if len(identifier) < MIN_NAME_LENGTH:
+            # Determine the appropriate violation code based on context
+            if isinstance(ast_node, ast.AnnAssign):
+                violation_code = ViolationCode.ATTRIBUTE_NAME_LENGTH
+            elif isinstance(ast_node, ast.Assign):
+                violation_code = ViolationCode.VARIABLE_NAME_LENGTH
+            else:
+                # This shouldn't happen with current AST node types, but fall back to generic if needed
+                violation_code = ViolationCode.ATTRIBUTE_NAME_LENGTH
+
             self.violations.append(
                 Violation(
                     line_number=ast_node.lineno,
                     column_number=ast_node.col_offset,
-                    violation_code=ViolationCode.NAME_LENGTH,
+                    violation_code=violation_code,
                 )
             )
 
@@ -124,7 +133,7 @@ class COP004Check(ast.NodeVisitor):
                 Violation(
                     line_number=ast_node.lineno,
                     column_number=ast_node.col_offset,
-                    violation_code=ViolationCode.NAME_LENGTH,
+                    violation_code=ViolationCode.FUNCTION_NAME_LENGTH,
                 )
             )
 
@@ -149,7 +158,7 @@ class COP004Check(ast.NodeVisitor):
                 Violation(
                     line_number=argument.lineno,
                     column_number=argument.col_offset,
-                    violation_code=ViolationCode.NAME_LENGTH,
+                    violation_code=ViolationCode.ARGUMENT_NAME_LENGTH,
                 )
             )
 
@@ -161,6 +170,6 @@ class COP004Check(ast.NodeVisitor):
                 Violation(
                     line_number=ast_node.lineno,
                     column_number=ast_node.col_offset,
-                    violation_code=ViolationCode.NAME_LENGTH,
+                    violation_code=ViolationCode.CLASS_NAME_LENGTH,
                 )
             )
