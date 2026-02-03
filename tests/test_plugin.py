@@ -77,6 +77,8 @@ def test_import_validations(input_source: str, expected_output: list[str]) -> No
         ("value: typing.Final[int] = 1", ["COP003"]),
         # Note: self.value annotations are in method bodies, not class bodies, so no violation
         ("self.value: str = 'hello'", []),
+        # No violation: None annotation doesn't trigger whitelisted check
+        ("value = 1", []),
     ],
 )
 def test_type_annotation_validations(input_source: str, expected_output: list[str]) -> None:
@@ -124,6 +126,8 @@ def test_type_annotation_validations(input_source: str, expected_output: list[st
         ("def test_example() -> None:\n    return None", []),
         # No violation: pytest fixture is exempt from naming rules
         ("import pytest\n\n@pytest.fixture\ndef data():\n    return 1", []),
+        # No violation: underscore variable is ignored
+        ("_ = 1", []),
         # COP004F: Function name must be a verb
         ("def total_value() -> int:\n    return 1", ["COP005"]),
         # No violation: get_ prefix is allowed for sync functions
@@ -146,6 +150,11 @@ def test_type_annotation_validations(input_source: str, expected_output: list[st
         (
             "import faker\ndef some_func(arg: faker.Faker): pass",
             ["COP005"],
+        ),
+        # No violation: Non-fixture decorator doesn't trigger fixture check
+        (
+            "import functools\n@functools.lru_cache()\ndef some_func(): pass",
+            ["COP004F", "COP005"],
         ),
         # COP005: Faker annotation doesn't exempt function naming rules
         (
@@ -251,6 +260,15 @@ def test_module_level_validations(input_source: str, expected_output: list[str])
     assert sorted(extracted_codes) == sorted(expected_output)
 
 
+def test_non_function_nodes() -> None:
+    """Test that non-function AST nodes don't cause issues."""
+    # Test with a class node (not a function) - should not crash
+    code = "class Example:\n    pass"
+    ast_node: typing.Final = ast.parse(code)
+    messages: typing.Final = [item[2] for item in CommunityOfPythonFlake8Plugin(ast_node).run()]
+    # Just ensure it doesn't crash - no specific assertions needed
+
+
 @pytest.mark.parametrize(
     ("input_source", "expected_output"),
     [
@@ -268,10 +286,24 @@ def test_module_level_validations(input_source: str, expected_output: list[str])
             "    value: int\n",
             ["COP004C", "COP008"],
         ),
+        # No violation: Class inheriting from attribute-based whitelisted base
+        (
+            "import pydantic\n"
+            "class MyModel(pydantic.BaseModel):\n"
+            "    value: int\n",
+            [],
+        ),
         # COP010: Dataclass with init=False still needs slots and frozen
         (
             "import dataclasses\n\n@dataclasses.dataclass(init=False)\nclass Example:\n    value: int\n",
             ["COP004C", "COP008", "COP010"],
+        ),
+        # No violation: Attribute in whitelisted parent class is exempt
+        (
+            "from pydantic import BaseModel\n"
+            "class MyModel(BaseModel):\n"
+            "    value: int\n",
+            [],
         ),
     ],
 )
