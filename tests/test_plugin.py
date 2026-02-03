@@ -8,7 +8,7 @@ from community_of_python_flake8_plugin.plugin import CommunityOfPythonFlake8Plug
 
 
 @pytest.mark.parametrize(
-    ("source", "expected"),
+    ("input_source", "expected_output"),
     [
         # COP001: Use module import when importing more than two names
         ("from x import a, b, c", ["COP001"]),
@@ -194,7 +194,7 @@ from community_of_python_flake8_plugin.plugin import CommunityOfPythonFlake8Plug
         ),
     ],
 )
-def check_plugin_reports_function_correctly_with_very_long_name_that_exceeds_minimum_length_requirement(
+def test_plugin_reports_function_correctly_with_very_long_name_that_exceeds_minimum_length_requirement(
     input_source: str, expected_output: list[str]
 ) -> None:
     ast_node: typing.Final = ast.parse(input_source)
