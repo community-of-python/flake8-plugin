@@ -1,7 +1,6 @@
 from __future__ import annotations
 import ast
 import typing
-from typing import TYPE_CHECKING
 
 from community_of_python_flake8_plugin.checks.cop001 import COP001Check
 from community_of_python_flake8_plugin.checks.cop002 import COP002Check
@@ -16,7 +15,7 @@ from community_of_python_flake8_plugin.checks.cop010 import COP010Check
 from community_of_python_flake8_plugin.utils import check_module_has_all_declaration
 
 
-if TYPE_CHECKING:
+if typing.TYPE_CHECKING:
     import ast
 
     from community_of_python_flake8_plugin.violations import Violation

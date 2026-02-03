@@ -1,7 +1,6 @@
 from __future__ import annotations
 import ast
 import typing
-from typing import Final
 
 from community_of_python_flake8_plugin.constants import FINAL_CLASS_EXCLUDED_BASES, MIN_NAME_LENGTH
 from community_of_python_flake8_plugin.utils import find_parent_class_definition
@@ -38,7 +37,7 @@ def check_is_pytest_fixture(ast_node: ast.AST) -> bool:
 
 
 def check_is_fixture_decorator(decorator: ast.expr) -> bool:
-    target: Final = decorator.func if isinstance(decorator, ast.Call) else decorator
+    target: typing.Final = decorator.func if isinstance(decorator, ast.Call) else decorator
     if isinstance(target, ast.Name):
         return target.id == "fixture"
     if isinstance(target, ast.Attribute):
@@ -63,7 +62,7 @@ class COP004Check(ast.NodeVisitor):
 
     def visit_AnnAssign(self, ast_node: ast.AnnAssign) -> None:
         if isinstance(ast_node.target, ast.Name):
-            parent_class: Final = find_parent_class_definition(self.syntax_tree, ast_node)
+            parent_class: typing.Final = find_parent_class_definition(self.syntax_tree, ast_node)
             self.validate_name_length(ast_node.target.id, ast_node, parent_class)
         self.generic_visit(ast_node)
 
@@ -75,13 +74,13 @@ class COP004Check(ast.NodeVisitor):
         self.generic_visit(ast_node)
 
     def visit_FunctionDef(self, ast_node: ast.FunctionDef) -> None:
-        parent_class: Final = find_parent_class_definition(self.syntax_tree, ast_node)
+        parent_class: typing.Final = find_parent_class_definition(self.syntax_tree, ast_node)
         self.validate_function_name(ast_node, parent_class)
         self.validate_function_args(ast_node)
         self.generic_visit(ast_node)
 
     def visit_AsyncFunctionDef(self, ast_node: ast.AsyncFunctionDef) -> None:
-        parent_class: Final = find_parent_class_definition(self.syntax_tree, ast_node)
+        parent_class: typing.Final = find_parent_class_definition(self.syntax_tree, ast_node)
         self.validate_function_name(ast_node, parent_class)
         self.validate_function_args(ast_node)
         self.generic_visit(ast_node)
@@ -119,7 +118,7 @@ class COP004Check(ast.NodeVisitor):
             self.violations.append(Violation(ast_node.lineno, ast_node.col_offset, ViolationCode.NAME_LENGTH))
 
     def validate_function_args(self, ast_node: ast.FunctionDef | ast.AsyncFunctionDef) -> None:
-        arguments: Final = ast_node.args
+        arguments: typing.Final = ast_node.args
         for argument in arguments.posonlyargs + arguments.args + arguments.kwonlyargs:
             self.validate_argument_name_length(argument)
         if arguments.vararg is not None:

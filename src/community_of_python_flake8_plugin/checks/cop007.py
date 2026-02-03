@@ -26,6 +26,7 @@ def collect_load_counts(ast_node: ast.AST) -> dict[str, int]:
     return counts
 
 
+@typing.final
 class COP007Check(ast.NodeVisitor):
     def __init__(self) -> None:
         self.violations: list[Violation] = []

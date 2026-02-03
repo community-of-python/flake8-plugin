@@ -49,6 +49,7 @@ def check_is_fixture_decorator(decorator: ast.expr) -> bool:
     return False
 
 
+@typing.final
 class COP006Check(ast.NodeVisitor):
     def __init__(self) -> None:
         self.violations: list[Violation] = []

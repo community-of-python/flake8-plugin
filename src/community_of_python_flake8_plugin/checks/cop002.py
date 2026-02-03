@@ -3,7 +3,6 @@ import ast
 import sys
 import typing
 from importlib import util as importlib_util
-from typing import Final
 
 from community_of_python_flake8_plugin.constants import ALLOWED_STDLIB_FROM_IMPORTS
 from community_of_python_flake8_plugin.violation_codes import ViolationCode
@@ -17,7 +16,7 @@ def check_is_stdlib_module(module_name: str) -> bool:
 def check_is_stdlib_package(module_name: str) -> bool:
     if not check_is_stdlib_module(module_name):
         return False
-    module_spec: Final = importlib_util.find_spec(module_name)
+    module_spec: typing.Final = importlib_util.find_spec(module_name)
     return module_spec is not None and module_spec.submodule_search_locations is not None
 
 

@@ -1,6 +1,6 @@
 from __future__ import annotations
+import enum
 import typing
-from enum import Enum
 from typing import TypedDict
 
 
@@ -9,7 +9,7 @@ class ViolationCodeItem(TypedDict):
     description: str
 
 
-class ViolationCode(Enum):
+class ViolationCode(enum.Enum):
     MODULE_IMPORT: typing.ClassVar[ViolationCodeItem] = {
         "code": "COP001",
         "description": "Use module import when importing more than two names",

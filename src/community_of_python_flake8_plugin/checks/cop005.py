@@ -1,7 +1,6 @@
 from __future__ import annotations
 import ast
 import typing
-from typing import Final
 
 from community_of_python_flake8_plugin.constants import FINAL_CLASS_EXCLUDED_BASES, VERB_PREFIXES
 from community_of_python_flake8_plugin.utils import find_parent_class_definition
@@ -48,7 +47,7 @@ def check_is_pytest_fixture(ast_node: ast.AST) -> bool:
 
 
 def check_is_fixture_decorator(decorator: ast.expr) -> bool:
-    target: Final = decorator.func if isinstance(decorator, ast.Call) else decorator
+    target: typing.Final = decorator.func if isinstance(decorator, ast.Call) else decorator
     if isinstance(target, ast.Name):
         return target.id == "fixture"
     if isinstance(target, ast.Attribute):
@@ -67,12 +66,12 @@ class COP005Check(ast.NodeVisitor):
         self.violations: list[Violation] = []
 
     def visit_FunctionDef(self, ast_node: ast.FunctionDef) -> None:
-        parent_class: Final = retrieve_parent_class(self.syntax_tree, ast_node)
+        parent_class: typing.Final = retrieve_parent_class(self.syntax_tree, ast_node)
         self.validate_function_name(ast_node, parent_class)
         self.generic_visit(ast_node)
 
     def visit_AsyncFunctionDef(self, ast_node: ast.AsyncFunctionDef) -> None:
-        parent_class: Final = retrieve_parent_class(self.syntax_tree, ast_node)
+        parent_class: typing.Final = retrieve_parent_class(self.syntax_tree, ast_node)
         self.validate_function_name(ast_node, parent_class)
         self.generic_visit(ast_node)
 
@@ -92,7 +91,7 @@ class COP005Check(ast.NodeVisitor):
         if should_skip:
             return
 
-        min_acronym_length: Final = 3
+        min_acronym_length: typing.Final = 3
         if len(ast_node.name) < min_acronym_length:  # Short names are likely acronyms or special cases
             return
 

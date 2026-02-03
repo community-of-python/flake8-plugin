@@ -55,6 +55,7 @@ def dataclass_has_required_args(decorator: ast.expr, *, require_slots: bool, req
     return not (require_frozen and not check_is_true_literal(keywords.get("frozen")))
 
 
+@typing.final
 class COP010Check(ast.NodeVisitor):
     def __init__(self) -> None:
         self.violations: list[Violation] = []

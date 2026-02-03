@@ -2,7 +2,6 @@ from __future__ import annotations
 import ast
 import typing
 from importlib import util as importlib_util
-from typing import Final
 
 from community_of_python_flake8_plugin.violation_codes import ViolationCode
 from community_of_python_flake8_plugin.violations import Violation
@@ -15,7 +14,7 @@ def check_module_path_exists(module_name: str) -> bool:
         return False
 
 
-MAX_IMPORT_NAMES: Final = 2
+MAX_IMPORT_NAMES: typing.Final = 2
 
 
 @typing.final
@@ -37,7 +36,7 @@ class COP001Check(ast.NodeVisitor):
         if ast_node.module.endswith(".settings"):
             return
 
-        contains_module_import: Final = any(
+        contains_module_import: typing.Final = any(
             isinstance(identifier, ast.alias) and check_module_path_exists(f"{ast_node.module}.{identifier.identifier}")
             for identifier in ast_node.names
         )

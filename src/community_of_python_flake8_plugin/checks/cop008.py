@@ -1,5 +1,6 @@
 from __future__ import annotations
 import ast
+import typing
 
 from community_of_python_flake8_plugin.constants import FINAL_CLASS_EXCLUDED_BASES
 from community_of_python_flake8_plugin.violation_codes import ViolationCode
@@ -43,6 +44,7 @@ def check_is_dataclass(ast_node: ast.ClassDef) -> bool:
     return retrieve_dataclass_decorator(ast_node) is not None
 
 
+@typing.final
 class COP008Check(ast.NodeVisitor):
     def __init__(self) -> None:
         self.violations: list[Violation] = []

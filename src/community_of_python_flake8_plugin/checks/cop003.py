@@ -1,7 +1,6 @@
 from __future__ import annotations
 import ast
 import typing
-from typing import Final
 
 from community_of_python_flake8_plugin.constants import SCALAR_ANNOTATIONS
 from community_of_python_flake8_plugin.utils import find_parent_class_definition
@@ -54,9 +53,9 @@ class COP003Check(ast.NodeVisitor):
 
     def visit_AnnAssign(self, ast_node: ast.AnnAssign) -> None:
         if isinstance(ast_node.target, ast.Name):
-            parent_class: Final = find_parent_class_definition(self.syntax_tree, ast_node)
-            parent_function: Final = find_parent_function(self.syntax_tree, ast_node)
-            in_class_body: Final = parent_class is not None and parent_function is None
+            parent_class: typing.Final = find_parent_class_definition(self.syntax_tree, ast_node)
+            parent_function: typing.Final = find_parent_function(self.syntax_tree, ast_node)
+            in_class_body: typing.Final = parent_class is not None and parent_function is None
 
             if not in_class_body:
                 self.validate_scalar_annotation(ast_node)

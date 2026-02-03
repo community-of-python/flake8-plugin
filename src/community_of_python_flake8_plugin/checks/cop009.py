@@ -1,5 +1,6 @@
 from __future__ import annotations
 import ast
+import typing
 
 from community_of_python_flake8_plugin.constants import MAPPING_PROXY_TYPES
 from community_of_python_flake8_plugin.violation_codes import ViolationCode
@@ -37,6 +38,7 @@ def check_is_mapping_proxy_call(value: ast.AST | None) -> bool:
     return False
 
 
+@typing.final
 class COP009Check(ast.NodeVisitor):
     def __init__(self) -> None:
         self.violations: list[Violation] = []
