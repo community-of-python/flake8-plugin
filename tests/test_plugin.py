@@ -91,43 +91,43 @@ from community_of_python_flake8_plugin.plugin import CommunityOfPythonFlake8Plug
             "self.value = value",
             ["COP008"],
         ),
-        # No violation: Classes inheriting from BaseModel are exempt
-        ("from pydantic import BaseModel\nclass MyBaseModel(BaseModel): ...", []),
-        ("import pydantic\nclass MyBaseModel(pydantic.BaseModel): ...", []),
-        # No violation: Classes inheriting from RootModel are exempt
-        ("from pydantic import RootModel\nclass MyRootModel(RootModel): ...", []),
-        # No violation: Classes inheriting from ModelFactory are exempt
+        # COP008: Classes inheriting from BaseModel now require final decorator
+        ("from pydantic import BaseModel\nclass MyBaseModel(BaseModel): ...", ["COP008"]),
+        ("import pydantic\nclass MyBaseModel(pydantic.BaseModel): ...", ["COP008"]),
+        # COP008: Classes inheriting from RootModel now require final decorator
+        ("from pydantic import RootModel\nclass MyRootModel(RootModel): ...", ["COP008"]),
+        # COP008: Classes inheriting from ModelFactory now require final decorator
         (
             "from polyfactory.factories.pydantic_factory import ModelFactory\nclass MyModelFactory(ModelFactory): ...",
-            [],
+            ["COP008"],
         ),
-        # COP004, COP010: Dataclass with short name and missing required args
+        # COP004, COP008, COP010: Dataclass with short name, missing final decorator, and missing required args
         (
             "import dataclasses\n\n@dataclasses.dataclass\nclass Example:\n    value: int\n    name: str\n",
-            ["COP004", "COP010", "COP004"],
+            ["COP004", "COP008", "COP010", "COP004"],
         ),
-        # COP004: Dataclass with correct config but short name
+        # COP004, COP008: Dataclass with correct config but short name and missing final decorator
         (
             "import dataclasses\n\n"
             "@dataclasses.dataclass(kw_only=True, slots=True, frozen=True)\n"
             "class Example:\n"
             "    value: int\n",
-            ["COP004"],
+            ["COP004", "COP008"],
         ),
-        # COP004, COP010: Dataclass with init=False still needs slots and frozen
+        # COP004, COP008, COP010: Dataclass with init=False, short name, missing final decorator, still needs slots and frozen
         (
             "import dataclasses\n\n@dataclasses.dataclass(init=False)\nclass Example:\n    value: int\n",
-            ["COP004", "COP010"],
+            ["COP004", "COP008", "COP010"],
         ),
-        # No violation: Exception classes don't need frozen
+        # COP008: Exception classes now require final decorator
         (
             "import dataclasses\n\n@dataclasses.dataclass\nclass ExampleError(ValueError):\n    value: int\n",
-            [],
+            ["COP008"],
         ),
-        # No violation: Inheriting dataclasses don't need validation
+        # COP008: Inheriting dataclasses now require final decorator
         (
             "import dataclasses\n\n@dataclasses.dataclass\nclass ExampleChild(Example):\n    value: int\n",
-            [],
+            ["COP008"],
         ),
         # COP009: Wrap module dictionaries with types.MappingProxyType
         ("values = {'key': 'value'}", ["COP009"]),
@@ -155,13 +155,13 @@ from community_of_python_flake8_plugin.plugin import CommunityOfPythonFlake8Plug
             ")",
             [],
         ),
-        # No violation: Classes inheriting from ModelFactory are exempt
+        # COP008: Classes inheriting from ModelFactory now require final decorator
         (
             "from polyfactory.factories.pydantic_factory import ModelFactory\n"
             "class MyModelFactory(ModelFactory):\n"
             "    def fn():\n"
             "        pass",
-            [],
+            ["COP008"],
         ),
         # No violation: Dictionary wrapped in MappingProxyType
         ("import types\nvalues = types.MappingProxyType({'key': 'value'})", []),
