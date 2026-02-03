@@ -21,7 +21,7 @@ def contains_final_decorator(ast_node: ast.ClassDef) -> bool:
     return False
 
 
-def inherits_from_whitelisted_class(ast_node: ast.ClassDef) -> bool:
+def check_inherits_from_whitelisted_class(ast_node: ast.ClassDef) -> bool:
     for base_class in ast_node.bases:
         if isinstance(base_class, ast.Name) and base_class.id in FINAL_CLASS_EXCLUDED_BASES:
             return True
@@ -58,6 +58,6 @@ class COP008Check(ast.NodeVisitor):
             not check_is_dataclass(ast_node)
             and not contains_final_decorator(ast_node)
             and not ast_node.name.startswith("Test")
-            and not inherits_from_whitelisted_class(ast_node)
+            and not check_inherits_from_whitelisted_class(ast_node)
         ):
             self.violations.append(Violation(ast_node.lineno, ast_node.col_offset, ViolationCode.FINAL_CLASS))

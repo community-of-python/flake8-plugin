@@ -19,10 +19,11 @@ def collect_assignments(ast_node: ast.AST) -> dict[str, list[ast.AST]]:
 
 
 def collect_load_counts(ast_node: ast.AST) -> dict[str, int]:
+    load_counts_dict: typing.Final[dict[str, int]] = {}
     for child in ast.walk(ast_node):
         if isinstance(child, ast.Name) and isinstance(child.ctx, ast.Load):
-            counts[child.id] = counts.get(child.id, 0) + 1
-    return counts
+            load_counts_dict[child.id] = load_counts_dict.get(child.id, 0) + 1
+    return load_counts_dict
 
 
 @typing.final

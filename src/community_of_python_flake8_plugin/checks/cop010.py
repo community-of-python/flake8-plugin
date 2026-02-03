@@ -32,7 +32,7 @@ def check_is_inheriting(ast_node: ast.ClassDef) -> bool:
     return len(ast_node.bases) > 0
 
 
-def dataclass_has_keyword(decorator: ast.expr, identifier: str, value: bool | None = None) -> bool:
+def check_dataclass_has_keyword(decorator: ast.expr, identifier: str, value: bool | None = None) -> bool:
     if not isinstance(decorator, ast.Call):
         return False
     for keyword in decorator.keywords:
@@ -44,7 +44,7 @@ def dataclass_has_keyword(decorator: ast.expr, identifier: str, value: bool | No
     return False
 
 
-def dataclass_has_required_args(decorator: ast.expr, *, require_slots: bool, require_frozen: bool) -> bool:
+def check_dataclass_has_required_args(decorator: ast.expr, *, require_slots: bool, require_frozen: bool) -> bool:
     if not isinstance(decorator, ast.Call):
         return False
     keywords: typing.Final = {keyword.arg: keyword.value for keyword in decorator.keywords if keyword.arg}
@@ -72,7 +72,7 @@ class COP010Check(ast.NodeVisitor):
             return
         if check_is_inheriting(ast_node):
             return
-        require_slots: typing.Final = not dataclass_has_keyword(decorator, "init", value=False)
+        require_slots: typing.Final = not check_dataclass_has_keyword(decorator, "init", value=False)
         require_frozen: typing.Final = require_slots and not check_is_exception_class(ast_node)
-        if not dataclass_has_required_args(decorator, require_slots=require_slots, require_frozen=require_frozen):
+        if not check_dataclass_has_required_args(decorator, require_slots=require_slots, require_frozen=require_frozen):
             self.violations.append(Violation(ast_node.lineno, ast_node.col_offset, ViolationCode.DATACLASS_CONFIG))

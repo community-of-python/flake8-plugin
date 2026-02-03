@@ -194,8 +194,10 @@ from community_of_python_flake8_plugin.plugin import CommunityOfPythonFlake8Plug
         ),
     ],
 )
-def test_plugin_reports_function(source: str, expected: list[str]) -> None:
-    ast_node: typing.Final = ast.parse(source)
+def check_plugin_reports_function_correctly_with_very_long_name_that_exceeds_minimum_length_requirement(
+    input_source: str, expected_output: list[str]
+) -> None:
+    ast_node: typing.Final = ast.parse(input_source)
     messages: typing.Final = [item[2] for item in CommunityOfPythonFlake8Plugin(ast_node).run()]
-    codes: typing.Final = [message.split(" ")[0] for message in messages]
-    assert sorted(codes) == sorted(expected)
+    extracted_codes: typing.Final = [message.split(" ")[0] for message in messages]
+    assert sorted(extracted_codes) == sorted(expected_output)

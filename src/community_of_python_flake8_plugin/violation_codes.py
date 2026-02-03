@@ -1,13 +1,16 @@
 from __future__ import annotations
 import enum
 import typing
+from typing import TypedDict
 
 
-class ViolationCodeItem(typing.TypedDict):
-    code: str  # noqa
+@typing.final
+class ViolationCodeItem(TypedDict):
+    code: str
     description: str
 
 
+@typing.final
 class ViolationCode(enum.Enum):
     MODULE_IMPORT: typing.ClassVar[ViolationCodeItem] = {
         "code": "COP001",

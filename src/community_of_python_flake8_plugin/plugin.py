@@ -12,8 +12,8 @@ from community_of_python_flake8_plugin.checks import execute_all_validations
 
 @typing.final
 class CommunityOfPythonFlake8Plugin:
-    name = "community-of-python-flake8-plugin"  # noqa
-    version = "0.1.27"  # noqa
+    name = "community-of-python-flake8-plugin"
+    version = "0.1.27"
 
     def __init__(self, tree: ast.AST) -> None:
         self.tree = tree
@@ -21,5 +21,5 @@ class CommunityOfPythonFlake8Plugin:
     def run(self) -> Iterable[tuple[int, int, str, type[object]]]:
         violations_list: typing.Final = execute_all_validations(self.tree)
         for violation in violations_list:
-            message = violation.code.value
-            yield violation.line, violation.col, message, type(self)
+            message = f"{violation.violation_code.value['code']} {violation.violation_code.value['description']}"
+            yield violation.line_number, violation.column_number, message, type(self)

@@ -7,6 +7,7 @@ if typing.TYPE_CHECKING:
     from .violation_codes import ViolationCode
 
 
+@typing.final
 @dataclasses.dataclass(frozen=True)
 class Violation:
     line_number: int
