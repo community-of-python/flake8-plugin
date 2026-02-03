@@ -6,6 +6,7 @@ MIN_NAME_LENGTH: typing.Final = 8
 
 VERB_PREFIXES: typing.Final = {
     "validate",
+    "test",
     "execute",
     "visit",
     "get",

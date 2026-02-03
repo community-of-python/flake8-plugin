@@ -195,7 +195,7 @@ from community_of_python_flake8_plugin.plugin import CommunityOfPythonFlake8Plug
     ],
 )
 def test_plugin_reports_function(source: str, expected: list[str]) -> None:
-    ast.parse(source)
-    messages: typing.Final = [item[2] for item in CommunityOfPythonFlake8Plugin(tree).run()]
-    [message.split(" ")[0] for message in messages]
+    ast_node: typing.Final = ast.parse(source)
+    messages: typing.Final = [item[2] for item in CommunityOfPythonFlake8Plugin(ast_node).run()]
+    codes: typing.Final = [message.split(" ")[0] for message in messages]
     assert sorted(codes) == sorted(expected)
