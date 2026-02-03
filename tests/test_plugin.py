@@ -77,7 +77,7 @@ def test_import_validations(input_source: str, expected_output: list[str]) -> No
         ("value: typing.Final[int] = 1", ["COP003"]),
         # Note: self.value annotations are in method bodies, not class bodies, so no violation
         ("self.value: str = 'hello'", []),
-        # No violation: None annotation doesn't trigger whitelisted check
+        # No violation: Assignment without annotation doesn't trigger annotation checks
         ("value = 1", []),
     ],
 )
@@ -128,6 +128,8 @@ def test_type_annotation_validations(input_source: str, expected_output: list[st
         ("import pytest\n\n@pytest.fixture\ndef data():\n    return 1", []),
         # No violation: underscore variable is ignored
         ("_ = 1", []),
+        # No violation: underscore attribute is ignored, but still need final decorator
+        ("class ExampleClass:\n    _ = 1", ["COP008"]),
         # COP004F: Function name must be a verb
         ("def total_value() -> int:\n    return 1", ["COP005"]),
         # No violation: get_ prefix is allowed for sync functions
@@ -153,8 +155,26 @@ def test_type_annotation_validations(input_source: str, expected_output: list[st
         ),
         # No violation: Non-fixture decorator doesn't trigger fixture check
         (
-            "import functools\n@functools.lru_cache()\ndef some_func(): pass",
+            "import functools\n@functools.lru_cache()\ndef func(): pass",
             ["COP004F", "COP005"],
+        ),
+        # COP005: Non-whitelisted annotation doesn't exempt function naming rules
+        # Also triggers COP004F (function name too short) and COP004G (argument name too short)
+        (
+            "def func(user: CustomType): pass",
+            ["COP004F", "COP004G", "COP005"],
+        ),
+        # COP005: Subscript annotation doesn't exempt function naming rules
+        # Also triggers COP004F (function name too short) and COP004G (argument name too short)
+        (
+            "def func(user: List[int]): pass",
+            ["COP004F", "COP004G", "COP005"],
+        ),
+        # No violation: Unannotated argument doesn't trigger annotation checks
+        # Also triggers COP004F (function name too short) and COP004G (argument name too short)
+        (
+            "def func(user): pass",
+            ["COP004F", "COP004G", "COP005"],
         ),
         # COP005: Faker annotation doesn't exempt function naming rules
         (
@@ -287,11 +307,20 @@ def test_non_function_nodes() -> None:
             ["COP004C", "COP008"],
         ),
         # No violation: Class inheriting from attribute-based whitelisted base
+        # Still needs final decorator
         (
             "import pydantic\n"
-            "class MyModel(pydantic.BaseModel):\n"
+            "class MyModelClass(pydantic.BaseModel):\n"
             "    value: int\n",
-            [],
+            ["COP008"],
+        ),
+        # No violation: Class inheriting from module.attribute whitelisted base
+        # Still needs final decorator
+        (
+            "import polyfactory.factories.pydantic_factory\n"
+            "class MyFactoryClass(polyfactory.factories.pydantic_factory.ModelFactory):\n"
+            "    pass",
+            ["COP008"],
         ),
         # COP010: Dataclass with init=False still needs slots and frozen
         (
@@ -299,11 +328,26 @@ def test_non_function_nodes() -> None:
             ["COP004C", "COP008", "COP010"],
         ),
         # No violation: Attribute in whitelisted parent class is exempt
+        # Still needs final decorator
         (
             "from pydantic import BaseModel\n"
-            "class MyModel(BaseModel):\n"
+            "class MyModelClass(BaseModel):\n"
             "    value: int\n",
-            [],
+            ["COP008"],
+        ),
+        # No violation: Attribute in RootModel subclass is exempt
+        # Still needs final decorator
+        (
+            "from pydantic import RootModel\n"
+            "class MyModelClass(RootModel):\n"
+            "    value: int\n",
+            ["COP008"],
+        ),
+        # No violation: Variable with non-standard assignment pattern
+        # Still needs final decorator
+        (
+            "class ExampleClass:\n    value = 1 if True else 2",
+            ["COP008"],
         ),
     ],
 )
