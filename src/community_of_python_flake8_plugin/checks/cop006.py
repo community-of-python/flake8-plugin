@@ -41,7 +41,7 @@ def check_is_pytest_fixture(ast_node: ast.AST) -> bool:
 
 
 def check_is_fixture_decorator(decorator: ast.expr) -> bool:
-    target: typing.Final = decorator.func if isinstance(decorator, ast.Call) else decorator
+    decorator.func if isinstance(decorator, ast.Call) else decorator
     if isinstance(target, ast.Name):
         return target.id == "fixture"
     if isinstance(target, ast.Attribute):

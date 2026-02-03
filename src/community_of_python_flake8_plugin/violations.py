@@ -1,14 +1,14 @@
 from __future__ import annotations
-from dataclasses import dataclass
-from typing import TYPE_CHECKING
+import dataclasses
+import typing
 
 
-if TYPE_CHECKING:
+if typing.TYPE_CHECKING:
     from .violation_codes import ViolationCode
 
 
-@dataclass(frozen=True)
+@dataclasses.dataclass(frozen=True)
 class Violation:
-    line: int
-    col: int
-    code: ViolationCode
+    line_number: int
+    column_number: int
+    violation_code: ViolationCode

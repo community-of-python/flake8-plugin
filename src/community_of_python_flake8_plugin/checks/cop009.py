@@ -13,15 +13,15 @@ def check_is_mapping_literal(value: ast.AST | None) -> bool:
     if isinstance(value, ast.Call):
         if check_is_typed_dict_call(value):
             return False
-        return any(isinstance(argument_name, ast.Dict) for argument_name in value.args)
+        return any(isinstance(argument, ast.Dict) for argument in value.args)
     return False
 
 
 def check_is_typed_dict_call(value: ast.Call) -> bool:
-    if isinstance(value.function_name, ast.Name) and value.function_name.id == "TypedDict":
+    if isinstance(value.function, ast.Name) and value.function.id == "TypedDict":
         return True
-    if isinstance(value.function_name, ast.Attribute) and value.function_name.attr == "TypedDict":
-        return isinstance(value.function_name.value, ast.Name) and value.function_name.value.id in {
+    if isinstance(value.function, ast.Attribute) and value.function.attr == "TypedDict":
+        return isinstance(value.function.value, ast.Name) and value.function.value.id in {
             "typing",
             "typing_extensions",
         }
@@ -31,10 +31,10 @@ def check_is_typed_dict_call(value: ast.Call) -> bool:
 def check_is_mapping_proxy_call(value: ast.AST | None) -> bool:
     if not isinstance(value, ast.Call):
         return False
-    if isinstance(value.function_name, ast.Name):
-        return value.function_name.id in MAPPING_PROXY_TYPES
-    if isinstance(value.function_name, ast.Attribute):
-        return value.function_name.attr in MAPPING_PROXY_TYPES
+    if isinstance(value.function, ast.Name):
+        return value.function.id in MAPPING_PROXY_TYPES
+    if isinstance(value.function, ast.Attribute):
+        return value.function.attr in MAPPING_PROXY_TYPES
     return False
 
 

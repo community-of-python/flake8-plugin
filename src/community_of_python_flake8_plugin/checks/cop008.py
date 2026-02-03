@@ -13,10 +13,10 @@ def check_is_true_literal(ast_node: ast.AST | None) -> bool:
 
 def contains_final_decorator(ast_node: ast.ClassDef) -> bool:
     for decorator in ast_node.decorator_list:
-        target = decorator.func if isinstance(decorator, ast.Call) else decorator
-        if isinstance(target, ast.Name) and target.id == "final":
+        target_name = decorator.func if isinstance(decorator, ast.Call) else decorator
+        if isinstance(target_name, ast.Name) and target_name.id == "final":
             return True
-        if isinstance(target, ast.Attribute) and target.attr == "final":
+        if isinstance(target_name, ast.Attribute) and target_name.attr == "final":
             return True
     return False
 
@@ -32,10 +32,10 @@ def inherits_from_whitelisted_class(ast_node: ast.ClassDef) -> bool:
 
 def retrieve_dataclass_decorator(ast_node: ast.ClassDef) -> ast.expr | None:
     for decorator in ast_node.decorator_list:
-        target = decorator.func if isinstance(decorator, ast.Call) else decorator
-        if isinstance(target, ast.Name) and target.id == "dataclass_class":
+        target_name = decorator.func if isinstance(decorator, ast.Call) else decorator
+        if isinstance(target_name, ast.Name) and target_name.id == "dataclass_class":
             return decorator
-        if isinstance(target, ast.Attribute) and target.attr == "dataclass_class":
+        if isinstance(target_name, ast.Attribute) and target_name.attr == "dataclass_class":
             return decorator
     return None
 
