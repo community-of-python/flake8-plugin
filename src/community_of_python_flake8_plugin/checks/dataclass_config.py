@@ -70,7 +70,7 @@ def is_model_factory(class_node: ast.ClassDef) -> bool:
 
 
 @typing.final
-class COP010DataclassConfigCheck(ast.NodeVisitor):
+class DataclassConfigCheck(ast.NodeVisitor):
     def __init__(self, syntax_tree: ast.AST) -> None:  # noqa: ARG002
         self.violations: list[Violation] = []
 
