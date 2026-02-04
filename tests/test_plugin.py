@@ -197,12 +197,16 @@ def test_naming_validations(input_source: str, expected_output: list[str]) -> No
         ),
         # No violation: Variable used multiple times
         ("def fetch_item(values: list[int]) -> int:\n    return values[0]", []),
+        # No violation: Variable not used
+        ("def fetch_item(values: list[int]) -> int:\n    ...", []),
         # No violation: Variable used in conditional
         (
             "def fetch_item(values: list[int]) -> int | None:\n    if len(values) > 0:\n        return values[0]\n    "
             "return None",
             [],
         ),
+        # No violation: Variable used in loop
+        ("def fetch_item():\n    for _, one_value in values: print(f'{one_value}')", []),
     ],
 )
 def test_variable_usage_validations(input_source: str, expected_output: list[str]) -> None:
