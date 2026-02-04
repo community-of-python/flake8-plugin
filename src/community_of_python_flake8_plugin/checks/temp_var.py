@@ -7,24 +7,21 @@ from community_of_python_flake8_plugin.violation_codes import ViolationCodes
 from community_of_python_flake8_plugin.violations import Violation
 
 
+def is_tuple_unpacking(assign_node: ast.Assign) -> bool:
+    return bool(assign_node.targets and isinstance(assign_node.targets[0], ast.Tuple))
+
+
+def extract_names(expression: ast.expr) -> typing.Iterable[str]:
+    if isinstance(expression, ast.Name):
+        yield expression.id
+    elif isinstance(expression, ast.Tuple):
+        for elt in expression.elts:
+            yield from extract_names(elt)
+
+
 def collect_variable_usage_and_stores(function_node: ast.AST) -> tuple[dict[str, list[ast.Name]], set[str]]:
     variable_usage: typing.Final[defaultdict[str, list[ast.Name]]] = defaultdict(list)
     assigned_variable_names: typing.Final[set[str]] = set()
-
-    def extract_names(expression: ast.expr) -> typing.Iterable[str]:
-        if isinstance(expression, ast.Name):
-            yield expression.id
-        elif isinstance(expression, ast.Tuple):
-            for elt in expression.elts:
-                yield from extract_names(elt)
-
-    def is_tuple_unpacking(assign_node: ast.Assign) -> bool:
-        """Check if this is a tuple unpacking assignment."""
-        if not assign_node.targets:
-            return False
-
-        target = assign_node.targets[0]
-        return isinstance(target, ast.Tuple)
 
     @typing.final
     class UsageCollector(ast.NodeVisitor):
@@ -34,9 +31,12 @@ def collect_variable_usage_and_stores(function_node: ast.AST) -> tuple[dict[str,
 
         def visit_Assign(self, assign_node: ast.Assign) -> None:
             # Skip collecting variables from tuple unpacking assignments
-            if not is_tuple_unpacking(assign_node):
-                for target in assign_node.targets:
-                    assigned_variable_names.update(extract_names(target))
+            if is_tuple_unpacking(assign_node):
+                self.generic_visit(assign_node)
+                return
+
+            for target in assign_node.targets:
+                assigned_variable_names.update(extract_names(target))
             self.generic_visit(assign_node)
 
         def visit_AugAssign(self, aug_assign_node: ast.AugAssign) -> None:

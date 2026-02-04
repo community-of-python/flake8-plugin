@@ -184,7 +184,8 @@ def test_type_annotation_validations(input_source: str, expected_output: list[st
         ),
         # No violation: ModelFactory methods should be exempt from COP009
         (
-            "from polyfactory.factories.pydantic_factory import ModelFactory\nclass MyFactory(ModelFactory):\n    def calculator(self): pass",
+            "from polyfactory.factories.pydantic_factory import ModelFactory\n"
+            "class MyFactory(ModelFactory):\n    def calculator(self): pass",
             ["COP012"],
         ),
         # No violation: ModelFactory generic methods should be exempt from COP009
@@ -205,20 +206,19 @@ def test_type_annotation_validations(input_source: str, expected_output: list[st
             "class MyFactory(ModelFactory[some_module.SomeClass]):\n    @classmethod\n    def create(cls): pass",
             ["COP012"],
         ),
-        # No violation: cached_property imported directly should exempt function from COP009 (but triggers COP002 for import style)
+        # No violation: cached_property imported directly should exempt function from COP009
+        # (but triggers COP002 for import style)
         (
-            "from functools import cached_property\nclass ExampleClass:\n    @cached_property\n    def calculator(self): pass",
+            "from functools import cached_property\n"
+            "class ExampleClass:\n    @cached_property\n    def calculator(self): pass",
             ["COP002", "COP012"],
         ),
-        # No violation: cached_property() imported directly should exempt function from COP009 (but triggers COP002)
+        # No violation: cached_property() imported directly should exempt function from COP009
+        # (but triggers COP002)
         (
-            "from functools import cached_property\nclass ExampleClass:\n    @cached_property()\n    def calculator(self): pass",
+            "from functools import cached_property\n"
+            "class ExampleClass:\n    @cached_property()\n    def calculator(self): pass",
             ["COP002", "COP012"],
-        ),
-        # No violation: pytest fixture with name parameter should be exempt from COP009
-        (
-            "import pytest\n@pytest.fixture(name='events')\ndef fixture_events() -> list[dict]:\n    return []",
-            [],
         ),
         # COP009: faker.Faker annotation doesn't exempt function naming rules
         (

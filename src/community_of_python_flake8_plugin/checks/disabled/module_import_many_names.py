@@ -1,4 +1,9 @@
-"""Check is disabled because it doesn't work when flake8 invoked directly, not as python module (.venv/bin/flake8 doesn't work, python -m flake8 works)."""
+"""Check is disabled because it doesn't work when flake8 invoked directly, not as python module.
+
+(.venv/bin/flake8 doesn't work, python -m flake8 works).
+
+
+"""
 
 from __future__ import annotations
 import ast
@@ -32,12 +37,12 @@ def check_module_path_exists(module_name: str) -> bool:
             return importlib_util.find_spec(module_name) is not None
 
         parent, _, _child = module_name.rpartition(".")
-        parent_spec = importlib_util.find_spec(parent)  # does not execute parent
+        parent_spec: typing.Final = importlib_util.find_spec(parent)  # does not execute parent
         if parent_spec is None:
             return False
 
         # Parent must be a package (have places to search for submodules)
-        locations = parent_spec.submodule_search_locations
+        locations: typing.Final = parent_spec.submodule_search_locations
         if locations is None:
             return False
 
