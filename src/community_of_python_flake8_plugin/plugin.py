@@ -22,8 +22,8 @@ class PluginCheckProtocol(typing.Protocol):
 
 @typing.final
 class CommunityOfPythonFlake8Plugin:
-    plugin_name: typing.Final[str] = "community-of-python-flake8-plugin"
-    plugin_version: typing.Final[str] = "0.1.27"
+    name: typing.Final[str] = "community-of-python-flake8-plugin"
+    version: typing.Final[str] = "0.1.27"
 
     def __init__(self, tree: ast.AST) -> None:  # noqa: COP004G
         self.ast_syntax_tree: typing.Final[ast.AST] = tree
