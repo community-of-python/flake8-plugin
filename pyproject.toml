@@ -48,9 +48,8 @@ ignore = [
     "FA",
     "COM812",
     "ISC001",
-    "RUF100",
-    "RUF102",
 ]
+external = ["COP"]
 
 [tool.ruff.lint.isort]
 no-lines-before = ["standard-library", "local-folder"]

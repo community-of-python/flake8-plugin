@@ -32,7 +32,7 @@ def check_module_path_exists(module_name: str) -> bool:
 
 @typing.final
 class ModuleImportManyNamesCheck(ast.NodeVisitor):
-    def __init__(self, syntax_tree: ast.AST) -> None:  # noqa: ARG002
+    def __init__(self, syntax_tree: ast.AST) -> None:
         self.violations: list[Violation] = []
         self.contains_all_declaration: typing.Final[bool] = (
             check_module_has_all_declaration(syntax_tree) if isinstance(syntax_tree, ast.Module) else False

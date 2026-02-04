@@ -56,7 +56,7 @@ def retrieve_parent_class(syntax_tree: ast.AST, ast_node: ast.AST) -> ast.ClassD
 
 @typing.final
 class FunctionVerbCheck(ast.NodeVisitor):
-    def __init__(self, syntax_tree: ast.AST) -> None:  # noqa: ARG002
+    def __init__(self, syntax_tree: ast.AST) -> None:
         self.violations: list[Violation] = []
         self.syntax_tree: typing.Final[ast.AST] = syntax_tree
 
