@@ -4,7 +4,7 @@ import typing
 
 from community_of_python_flake8_plugin.constants import FINAL_CLASS_EXCLUDED_BASES
 from community_of_python_flake8_plugin.violations import Violation
-
+from community_of_python_flake8_plugin.violation_codes import ViolationCodes
 
 def is_dataclass_decorator(decorator: ast.expr) -> bool:
     """Check if the decorator is a dataclass decorator."""

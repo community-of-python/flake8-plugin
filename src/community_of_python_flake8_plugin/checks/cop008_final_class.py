@@ -4,7 +4,7 @@ import typing
 
 from community_of_python_flake8_plugin.violations import Violation
 
-
+from community_of_python_flake8_plugin.violation_codes import ViolationCodes
 def contains_final_decorator(class_node: ast.ClassDef) -> bool:
     for decorator in class_node.decorator_list:
         target_name = decorator.func if isinstance(decorator, ast.Call) else decorator

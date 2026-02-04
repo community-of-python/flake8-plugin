@@ -6,6 +6,7 @@ from importlib import util as importlib_util
 
 from community_of_python_flake8_plugin.constants import ALLOWED_STDLIB_FROM_IMPORTS
 from community_of_python_flake8_plugin.violations import Violation
+from community_of_python_flake8_plugin.violation_codes import ViolationCodes
 
 
 def check_is_stdlib_module(module_name: str) -> bool:

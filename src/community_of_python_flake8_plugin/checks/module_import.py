@@ -5,7 +5,7 @@ from importlib import util as importlib_util
 
 from community_of_python_flake8_plugin.utils import check_module_has_all_declaration
 from community_of_python_flake8_plugin.violations import Violation
-
+from community_of_python_flake8_plugin.violation_codes import ViolationCodes
 
 def check_module_path_exists(module_name: str) -> bool:
     try:

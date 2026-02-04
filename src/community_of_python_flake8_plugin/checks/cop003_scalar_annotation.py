@@ -5,7 +5,7 @@ import typing
 from community_of_python_flake8_plugin.constants import SCALAR_ANNOTATIONS
 from community_of_python_flake8_plugin.utils import find_parent_class_definition, find_parent_function
 from community_of_python_flake8_plugin.violations import Violation
-
+from community_of_python_flake8_plugin.violation_codes import ViolationCodes
 
 def check_is_literal_value(node_value: ast.AST) -> bool:
     if isinstance(node_value, ast.Constant):
