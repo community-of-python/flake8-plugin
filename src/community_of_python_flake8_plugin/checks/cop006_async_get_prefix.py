@@ -11,7 +11,7 @@ def check_is_verb_name(identifier: str) -> bool:
 
 
 @typing.final
-class COP006AsyncGetPrefixCheck(ast.NodeVisitor):
+class AsyncGetPrefixCheck(ast.NodeVisitor):
     def __init__(self, syntax_tree: ast.AST) -> None:  # noqa: ARG002
         self.violations: list[Violation] = []
 
