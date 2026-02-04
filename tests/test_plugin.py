@@ -283,8 +283,8 @@ def test_module_level_validations(input_source: str, expected_output: list[str])
 def test_non_function_nodes() -> None:
     """Test that non-function AST nodes don't cause issues."""
     # Test with a class node (not a function) - should not crash
-    code = "class Example:\n    pass"
-    ast_node: typing.Final = ast.parse(code)
+    example_code = "class Example:\n    pass"
+    ast_node: typing.Final = ast.parse(example_code)
     messages: typing.Final = [item[2] for item in CommunityOfPythonFlake8Plugin(ast_node).run()]
     # Just ensure it doesn't crash - no specific assertions needed
 
