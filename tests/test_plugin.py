@@ -309,9 +309,14 @@ def test_non_function_nodes() -> None:
         # No violation: Class inheriting from attribute-based whitelisted base
         # Still needs final decorator
         (
-            "import pydantic\n"
-            "class MyModelClass(pydantic.BaseModel):\n"
-            "    value: int\n",
+            "import pydantic\nclass MyModelClass(pydantic.BaseModel):\n    value: int\n",
+            ["COP008"],
+        ),
+        # No violation: Direct test of attribute-based inheritance (hits lines 51-52)
+        (
+            "import polyfactory.factories.pydantic_factory\n"
+            "class MyFactoryClass(polyfactory.factories.pydantic_factory.ModelFactory):\n"
+            "    pass",
             ["COP008"],
         ),
         # No violation: Class inheriting from module.attribute whitelisted base
@@ -330,23 +335,31 @@ def test_non_function_nodes() -> None:
         # No violation: Attribute in whitelisted parent class is exempt
         # Still needs final decorator
         (
-            "from pydantic import BaseModel\n"
-            "class MyModelClass(BaseModel):\n"
-            "    value: int\n",
+            "from pydantic import BaseModel\nclass MyModelClass(BaseModel):\n    value: int\n",
             ["COP008"],
         ),
         # No violation: Attribute in RootModel subclass is exempt
         # Still needs final decorator
         (
-            "from pydantic import RootModel\n"
-            "class MyModelClass(RootModel):\n"
-            "    value: int\n",
+            "from pydantic import RootModel\nclass MyModelClass(RootModel):\n    value: int\n",
             ["COP008"],
         ),
         # No violation: Variable with non-standard assignment pattern
         # Still needs final decorator
         (
             "class ExampleClass:\n    value = 1 if True else 2",
+            ["COP008"],
+        ),
+        # Direct test: Attribute in whitelisted class should hit early return (line 101)
+        (
+            "from pydantic import BaseModel\n"
+            "class MyModelClass(BaseModel):\n"
+            "    short_attr: int = 1",  # This should NOT trigger COP004A due to early return
+            ["COP008"],
+        ),
+        # Test for fallback violation code assignment (line 110)
+        (
+            "class ExampleClass:\n    value = 1\n    # This tests the fallback path in validate_name_length",
             ["COP008"],
         ),
     ],
