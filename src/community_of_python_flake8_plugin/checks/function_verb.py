@@ -27,12 +27,26 @@ def check_is_property(function_node: ast.AST) -> bool:
 
 
 def check_is_property_decorator(decorator: ast.expr) -> bool:
+    # Handle direct name references like @property or @cached_property
     if isinstance(decorator, ast.Name):
-        return decorator.id == "property"
+        return decorator.id in {"property", "cached_property"}
+
+    # Handle attribute references like @functools.cached_property
     if isinstance(decorator, ast.Attribute) and decorator.attr in {"property", "setter", "cached_property"}:
         if isinstance(decorator.value, ast.Name) and decorator.value.id == "functools":
             return decorator.attr == "cached_property"
         return decorator.attr in {"property", "setter"}
+
+    # Handle decorator calls like @property() or @functools.cached_property()
+    if isinstance(decorator, ast.Call):
+        if isinstance(decorator.func, ast.Name):
+            return decorator.func.id in {"property", "cached_property"}
+        if isinstance(decorator.func, ast.Attribute):
+            if decorator.func.attr in {"property", "setter", "cached_property"}:
+                if isinstance(decorator.func.value, ast.Name) and decorator.func.value.id == "functools":
+                    return decorator.func.attr == "cached_property"
+                return decorator.func.attr in {"property", "setter"}
+
     return False
 
 

@@ -50,6 +50,7 @@ def test_import_stdlib_validations(input_source: str, expected_output: list[str]
         [item[2].split(" ")[0] for item in CommunityOfPythonFlake8Plugin(ast.parse(input_source)).run()]  # noqa: COP011
     ) == sorted(expected_output)
 
+
 @pytest.mark.skip("disabled")
 @pytest.mark.parametrize(
     ("input_source", "expected_output"),
@@ -160,6 +161,41 @@ def test_type_annotation_validations(input_source: str, expected_output: list[st
         (
             "import pytest\n@pytest.fixture(name='events')\ndef fixture_events() -> list[dict]:\n    return []",
             [],
+        ),
+        # No violation: property decorator should exempt function from COP009 (but not COP007 for name length)
+        (
+            "class ExampleClass:\n    @property\n    def calculator(): pass",
+            ["COP012"],
+        ),
+        # No violation: property() decorator call should exempt function from COP009 (but not COP007)
+        (
+            "class ExampleClass:\n    @property()\n    def calculator(): pass",
+            ["COP012"],
+        ),
+        # No violation: cached_property decorator should exempt function from COP009 (but not COP007)
+        (
+            "import functools\nclass ExampleClass:\n    @functools.cached_property\n    def calculator(): pass",
+            ["COP012"],
+        ),
+        # No violation: cached_property() decorator call should exempt function from COP009 (but not COP007)
+        (
+            "import functools\nclass ExampleClass:\n    @functools.cached_property()\n    def calculator(): pass",
+            ["COP012"],
+        ),
+        # No violation: ModelFactory methods should be exempt from COP009
+        (
+            "from polyfactory.factories.pydantic_factory import ModelFactory\nclass MyFactory(ModelFactory):\n    def calculator(self): pass",
+            ["COP012"],
+        ),
+        # No violation: cached_property imported directly should exempt function from COP009 (but triggers COP002 for import style)
+        (
+            "from functools import cached_property\nclass ExampleClass:\n    @cached_property\n    def calculator(self): pass",
+            ["COP002", "COP012"],
+        ),
+        # No violation: cached_property() imported directly should exempt function from COP009 (but triggers COP002)
+        (
+            "from functools import cached_property\nclass ExampleClass:\n    @cached_property()\n    def calculator(self): pass",
+            ["COP002", "COP012"],
         ),
         # No violation: pytest fixture with name parameter should be exempt from COP009
         (
