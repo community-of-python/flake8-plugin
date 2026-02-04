@@ -242,7 +242,7 @@ def test_variable_usage_validations(input_source: str, expected_output: list[str
         # COP012: Inheriting dataclasses now require final decorator
         (
             "import dataclasses\n\n@dataclasses.dataclass\nclass ExampleChild(Example):\n    value: int\n",
-            ["COP012"],
+            ["COP012", "COP014"],
         ),
         # COP012: Classes inheriting from ModelFactory now require final decorator (with methods)
         (

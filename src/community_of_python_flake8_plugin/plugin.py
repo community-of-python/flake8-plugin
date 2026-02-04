@@ -31,8 +31,17 @@ class CommunityOfPythonFlake8Plugin:
         self.ast_syntax_tree: typing.Final[ast.AST] = tree
 
     def run(self) -> Iterable[tuple[int, int, str, type[object]]]:  # noqa: COP007
-        checks_collection: typing.Final[list[PluginCheckProtocol]] = []
+        for check_instance in self._collect_checks():
+            for violation in check_instance.violations:
+                yield (
+                    violation.line_number,
+                    violation.column_number,
+                    f"{violation.violation_code.code} {violation.violation_code.description}",
+                    type(self),
+                )
 
+    def _collect_checks(self) -> list[PluginCheckProtocol]:
+        checks_collection: typing.Final = []
         for _, module_name, _ in pkgutil.iter_modules(checks_module.__path__):
             imported_module = importlib.import_module(f"{checks_module.__name__}.{module_name}")
 
@@ -42,12 +51,4 @@ class CommunityOfPythonFlake8Plugin:
                     check_instance = attribute(self.ast_syntax_tree)
                     check_instance.visit(self.ast_syntax_tree)
                     checks_collection.append(check_instance)
-
-        for check_instance in checks_collection:
-            for violation in check_instance.violations:
-                yield (
-                    violation.line_number,
-                    violation.column_number,
-                    f"{violation.violation_code.code} {violation.violation_code.description}",
-                    type(self),
-                )
+        return checks_collection

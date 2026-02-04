@@ -8,8 +8,8 @@ if typing.TYPE_CHECKING:
 
 
 @typing.final
-@dataclasses.dataclass(frozen=True, kw_only=True, slots=True)
-class Violation:
+@dataclasses.dataclass(kw_only=True, slots=True, frozen=True)
+class Violation:  # noqa: COP014
     line_number: int
     column_number: int
     violation_code: ViolationCodeItem

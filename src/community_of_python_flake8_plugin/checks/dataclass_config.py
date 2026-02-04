@@ -3,6 +3,7 @@ import ast
 import typing
 
 from community_of_python_flake8_plugin.constants import FINAL_CLASS_EXCLUDED_BASES
+from community_of_python_flake8_plugin.utils import check_inherits_from_bases
 from community_of_python_flake8_plugin.violation_codes import ViolationCodes
 from community_of_python_flake8_plugin.violations import Violation
 
@@ -23,31 +24,21 @@ def has_required_dataclass_params(decorator: ast.expr) -> bool:
     if not isinstance(decorator, ast.Call):
         return False
 
-    # Check if all required parameters are present
+    keywords: typing.Final = {kw.arg: kw.value for kw in decorator.keywords if isinstance(kw.value, ast.Constant)}
+    kw_only_param: typing.Final = keywords.get("kw_only")
+    slots_param: typing.Final = keywords.get("slots")
+    frozen_param: typing.Final = keywords.get("frozen")
     return (
-        any(
-            keyword.arg == "kw_only" and isinstance(keyword.value, ast.Constant) and keyword.value.value is True
-            for keyword in decorator.keywords
-        )
-        and any(
-            keyword.arg == "slots" and isinstance(keyword.value, ast.Constant) and keyword.value.value is True
-            for keyword in decorator.keywords
-        )
-        and any(
-            keyword.arg == "frozen" and isinstance(keyword.value, ast.Constant) and keyword.value.value is True
-            for keyword in decorator.keywords
-        )
+        kw_only_param is not None
+        and isinstance(kw_only_param, ast.Constant)
+        and kw_only_param.value is True
+        and slots_param is not None
+        and isinstance(slots_param, ast.Constant)
+        and slots_param.value is True
+        and frozen_param is not None
+        and isinstance(frozen_param, ast.Constant)
+        and frozen_param.value is True
     )
-
-
-def is_inherited_from_whitelisted_class(class_node: ast.ClassDef) -> bool:
-    """Check if class inherits from whitelisted base classes."""
-    for base_class in class_node.bases:
-        if isinstance(base_class, ast.Name) and base_class.id in FINAL_CLASS_EXCLUDED_BASES:
-            return True
-        if isinstance(base_class, ast.Attribute) and base_class.attr in FINAL_CLASS_EXCLUDED_BASES:
-            return True
-    return False
 
 
 def is_pydantic_model(class_node: ast.ClassDef) -> bool:
@@ -78,7 +69,7 @@ class DataclassConfigCheck(ast.NodeVisitor):
     def visit_ClassDef(self, ast_node: ast.ClassDef) -> None:
         # Skip whitelisted classes and classes that inherit from Exception or other special classes
         if (
-            is_inherited_from_whitelisted_class(ast_node)
+            check_inherits_from_bases(ast_node, FINAL_CLASS_EXCLUDED_BASES)
             or is_pydantic_model(ast_node)
             or is_model_factory(ast_node)
             or self._inherits_from_exception(ast_node)
@@ -104,8 +95,8 @@ class DataclassConfigCheck(ast.NodeVisitor):
     def _inherits_from_exception(self, ast_node: ast.ClassDef) -> bool:
         """Check if class inherits from Exception or its subclasses."""
         for base in ast_node.bases:
-            if (isinstance(base, ast.Name) and ("Error" in base.id or "Exception" in base.id)) or (
-                isinstance(base, ast.Attribute) and ("Error" in base.attr or "Exception" in base.attr)
-            ):
+            if isinstance(base, ast.Name) and ("Error" in base.id or "Exception" in base.id):
                 return True
-        return len(ast_node.bases) > 0  # Skip all classes that inherit from anything
+            if isinstance(base, ast.Attribute) and ("Error" in base.attr or "Exception" in base.attr):
+                return True
+        return False

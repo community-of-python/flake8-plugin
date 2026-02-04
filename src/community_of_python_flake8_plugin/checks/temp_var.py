@@ -7,21 +7,8 @@ from community_of_python_flake8_plugin.violation_codes import ViolationCodes
 from community_of_python_flake8_plugin.violations import Violation
 
 
-def collect_variable_usage(function_node: ast.AST) -> dict[str, list[ast.Name]]:
+def collect_variable_usage_and_stores(function_node: ast.AST) -> tuple[dict[str, list[ast.Name]], set[str]]:
     variable_usage: typing.Final[defaultdict[str, list[ast.Name]]] = defaultdict(list)
-
-    @typing.final
-    class VariableCollector(ast.NodeVisitor):
-        def visit_Name(self, name_node: ast.Name) -> None:
-            # Collect all name references (both loads and stores)
-            variable_usage[name_node.id].append(name_node)
-            self.generic_visit(name_node)
-
-    VariableCollector().visit(function_node)
-    return dict(variable_usage)
-
-
-def collect_assignment_stores(function_node: ast.AST) -> set[str]:
     assigned_variable_names: typing.Final[set[str]] = set()
 
     def extract_names(expression: ast.expr) -> typing.Iterable[str]:
@@ -32,7 +19,11 @@ def collect_assignment_stores(function_node: ast.AST) -> set[str]:
                 yield from extract_names(elt)
 
     @typing.final
-    class AssignmentStoreCollector(ast.NodeVisitor):
+    class UsageCollector(ast.NodeVisitor):
+        def visit_Name(self, name_node: ast.Name) -> None:
+            variable_usage[name_node.id].append(name_node)
+            self.generic_visit(name_node)
+
         def visit_Assign(self, assign_node: ast.Assign) -> None:
             for target in assign_node.targets:
                 assigned_variable_names.update(extract_names(target))
@@ -46,8 +37,8 @@ def collect_assignment_stores(function_node: ast.AST) -> set[str]:
             assigned_variable_names.update(extract_names(ann_assign_node.target))
             self.generic_visit(ann_assign_node)
 
-    AssignmentStoreCollector().visit(function_node)
-    return assigned_variable_names
+    UsageCollector().visit(function_node)
+    return dict(variable_usage), assigned_variable_names
 
 
 @typing.final
@@ -64,22 +55,19 @@ class TempVarCheck(ast.NodeVisitor):
         self.generic_visit(ast_node)
 
     def _check_temporary_variables(self, ast_node: ast.FunctionDef | ast.AsyncFunctionDef) -> None:
-        # Flag only the first temporary variable to match test expectations
+        usage_and_stores: typing.Final = collect_variable_usage_and_stores(ast_node)
         found_temporary_variable = False
 
-        for variable_name, usages in collect_variable_usage(ast_node).items():
-            # Skip special variables
+        for variable_name, usages in usage_and_stores[0].items():
             if variable_name.startswith("_") or variable_name in {"self", "cls"}:
                 continue
 
-            # Flag variables that are assigned once (in assignment) and read once
             if (
                 len([usage for usage in usages if isinstance(usage.ctx, ast.Store)]) == 1
                 and len([usage for usage in usages if isinstance(usage.ctx, ast.Load)]) == 1
-                and variable_name in collect_assignment_stores(ast_node)
+                and variable_name in usage_and_stores[1]
                 and not found_temporary_variable
             ):
-                # Find the first usage (likely the assignment) to report the violation
                 first_usage = usages[0]
                 self.violations.append(
                     Violation(

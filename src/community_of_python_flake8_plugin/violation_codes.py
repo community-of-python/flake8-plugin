@@ -4,8 +4,8 @@ import typing
 
 
 @typing.final
-@dataclasses.dataclass(frozen=True, kw_only=True, slots=True)
-class ViolationCodeItem:
+@dataclasses.dataclass(kw_only=True, slots=True, frozen=True)
+class ViolationCodeItem:  # noqa: COP014
     code: str  # noqa: COP004
     description: str
 

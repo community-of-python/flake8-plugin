@@ -3,7 +3,7 @@ import ast
 import typing
 
 from community_of_python_flake8_plugin.constants import FINAL_CLASS_EXCLUDED_BASES, MIN_NAME_LENGTH
-from community_of_python_flake8_plugin.utils import find_parent_class_definition
+from community_of_python_flake8_plugin.utils import check_inherits_from_bases, find_parent_class_definition
 from community_of_python_flake8_plugin.violation_codes import ViolationCodes
 from community_of_python_flake8_plugin.violations import Violation
 
@@ -41,15 +41,6 @@ def check_is_fixture_decorator(decorator: ast.expr) -> bool:
         return decorator.id == "fixture"
     if isinstance(decorator, ast.Attribute):
         return decorator.attr == "fixture" and isinstance(decorator.value, ast.Name) and decorator.value.id == "pytest"
-    return False
-
-
-def check_inherits_from_whitelisted_class(class_node: ast.ClassDef) -> bool:
-    for base_class in class_node.bases:
-        if isinstance(base_class, ast.Name) and base_class.id in FINAL_CLASS_EXCLUDED_BASES:
-            return True
-        if isinstance(base_class, ast.Attribute) and base_class.attr in FINAL_CLASS_EXCLUDED_BASES:
-            return True
     return False
 
 
@@ -95,7 +86,7 @@ class COP004NameLengthCheck(ast.NodeVisitor):
         if (
             parent_class
             and isinstance(ast_node, (ast.AnnAssign, ast.Assign))
-            and check_inherits_from_whitelisted_class(parent_class)
+            and check_inherits_from_bases(parent_class, FINAL_CLASS_EXCLUDED_BASES)
         ):
             return
 
@@ -121,7 +112,7 @@ class COP004NameLengthCheck(ast.NodeVisitor):
             return
         if check_is_ignored_name(ast_node.name):
             return
-        if parent_class and check_inherits_from_whitelisted_class(parent_class):
+        if parent_class and check_inherits_from_bases(parent_class, FINAL_CLASS_EXCLUDED_BASES):
             return
         if check_is_pytest_fixture(ast_node):
             return

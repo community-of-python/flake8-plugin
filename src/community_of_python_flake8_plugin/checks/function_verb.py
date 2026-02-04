@@ -3,7 +3,7 @@ import ast
 import typing
 
 from community_of_python_flake8_plugin.constants import FINAL_CLASS_EXCLUDED_BASES, VERB_PREFIXES
-from community_of_python_flake8_plugin.utils import find_parent_class_definition
+from community_of_python_flake8_plugin.utils import check_inherits_from_bases, find_parent_class_definition
 from community_of_python_flake8_plugin.violation_codes import ViolationCodes
 from community_of_python_flake8_plugin.violations import Violation
 
@@ -50,10 +50,6 @@ def check_is_fixture_decorator(decorator: ast.expr) -> bool:
     return False
 
 
-def retrieve_parent_class(syntax_tree: ast.AST, ast_node: ast.AST) -> ast.ClassDef | None:
-    return find_parent_class_definition(syntax_tree, ast_node)
-
-
 @typing.final
 class FunctionVerbCheck(ast.NodeVisitor):
     def __init__(self, syntax_tree: ast.AST) -> None:
@@ -61,13 +57,11 @@ class FunctionVerbCheck(ast.NodeVisitor):
         self.syntax_tree: typing.Final[ast.AST] = syntax_tree
 
     def visit_FunctionDef(self, ast_node: ast.FunctionDef) -> None:
-        parent_class: typing.Final = retrieve_parent_class(self.syntax_tree, ast_node)  # noqa: COP011
-        self.validate_function_name(ast_node, parent_class)
+        self.validate_function_name(ast_node, find_parent_class_definition(self.syntax_tree, ast_node))
         self.generic_visit(ast_node)
 
     def visit_AsyncFunctionDef(self, ast_node: ast.AsyncFunctionDef) -> None:
-        parent_class: typing.Final = retrieve_parent_class(self.syntax_tree, ast_node)  # noqa: COP011
-        self.validate_function_name(ast_node, parent_class)
+        self.validate_function_name(ast_node, find_parent_class_definition(self.syntax_tree, ast_node))
         self.generic_visit(ast_node)
 
     def validate_function_name(
@@ -75,7 +69,7 @@ class FunctionVerbCheck(ast.NodeVisitor):
     ) -> None:
         if (
             check_is_ignored_name(ast_node.name)
-            or (parent_class and self.check_inherits_from_whitelisted_class(parent_class))
+            or (parent_class and check_inherits_from_bases(parent_class, FINAL_CLASS_EXCLUDED_BASES))
             or check_is_property(ast_node)
             or check_is_pytest_fixture(ast_node)
             or check_is_verb_name(ast_node.name)
@@ -89,11 +83,3 @@ class FunctionVerbCheck(ast.NodeVisitor):
                 violation_code=ViolationCodes.FUNCTION_VERB,
             )
         )
-
-    def check_inherits_from_whitelisted_class(self, ast_node: ast.ClassDef) -> bool:
-        for base_class in ast_node.bases:
-            if isinstance(base_class, ast.Name) and base_class.id in FINAL_CLASS_EXCLUDED_BASES:
-                return True
-            if isinstance(base_class, ast.Attribute) and base_class.attr in FINAL_CLASS_EXCLUDED_BASES:
-                return True
-        return False

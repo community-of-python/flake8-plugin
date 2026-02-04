@@ -53,14 +53,11 @@ class ModuleImportManyNamesCheck(ast.NodeVisitor):
         if module_name is not None and module_name.endswith(".settings"):
             return
 
-        module_import_exists: typing.Final = any(  # noqa: COP011
-            isinstance(identifier, ast.alias)
-            and module_name is not None
-            and check_module_path_exists(f"{module_name}.{identifier.name}")
-            for identifier in ast_node.names
-        )
-
-        if not module_import_exists:
+        if not any(
+            check_module_path_exists(f"{module_name}.{alias.name}")
+            for alias in ast_node.names
+            if isinstance(alias, ast.alias) and module_name is not None
+        ):
             self.violations.append(
                 Violation(
                     line_number=ast_node.lineno,
