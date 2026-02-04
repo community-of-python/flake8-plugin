@@ -60,18 +60,22 @@ def retrieve_parent_class(syntax_tree: ast.AST, ast_node: ast.AST) -> ast.ClassD
 
 @typing.final
 class COP005FunctionVerbCheck(ast.NodeVisitor):
-    def __init__(self, syntax_tree: ast.AST) -> None:
-        self.syntax_tree = syntax_tree
+    def __init__(self) -> None:
         self.violations: list[Violation] = []
 
+    def set_syntax_tree(self, syntax_tree: ast.AST) -> None:
+        self.syntax_tree = syntax_tree
+
     def visit_FunctionDef(self, ast_node: ast.FunctionDef) -> None:
-        parent_class: typing.Final = retrieve_parent_class(self.syntax_tree, ast_node)
-        self.validate_function_name(ast_node, parent_class)
+        if hasattr(self, 'syntax_tree'):
+            parent_class: typing.Final = retrieve_parent_class(self.syntax_tree, ast_node)
+            self.validate_function_name(ast_node, parent_class)
         self.generic_visit(ast_node)
 
     def visit_AsyncFunctionDef(self, ast_node: ast.AsyncFunctionDef) -> None:
-        parent_class: typing.Final = retrieve_parent_class(self.syntax_tree, ast_node)
-        self.validate_function_name(ast_node, parent_class)
+        if hasattr(self, 'syntax_tree'):
+            parent_class: typing.Final = retrieve_parent_class(self.syntax_tree, ast_node)
+            self.validate_function_name(ast_node, parent_class)
         self.generic_visit(ast_node)
 
     def validate_function_name(

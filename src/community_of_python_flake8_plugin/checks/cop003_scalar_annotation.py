@@ -3,7 +3,7 @@ import ast
 import typing
 
 from community_of_python_flake8_plugin.constants import SCALAR_ANNOTATIONS
-from community_of_python_flake8_plugin.utils import find_parent_class_definition
+from community_of_python_flake8_plugin.utils import find_parent_class_definition, find_parent_function
 from community_of_python_flake8_plugin.violation_codes import ViolationCodes as ViolationCode
 from community_of_python_flake8_plugin.violations import Violation
 
@@ -36,23 +36,16 @@ def check_is_scalar_annotation(annotation: ast.AST) -> bool:
     return False
 
 
-def find_parent_function(syntax_tree: ast.AST, ast_node: ast.AST) -> ast.FunctionDef | ast.AsyncFunctionDef | None:
-    for potential_parent in ast.walk(syntax_tree):
-        if isinstance(potential_parent, (ast.FunctionDef, ast.AsyncFunctionDef)):
-            for child in ast.walk(potential_parent):
-                if child is ast_node:
-                    return potential_parent
-    return None
-
-
 @typing.final
 class COP003ScalarAnnotationCheck(ast.NodeVisitor):
-    def __init__(self, syntax_tree: ast.AST) -> None:
-        self.syntax_tree = syntax_tree
+    def __init__(self) -> None:
         self.violations: list[Violation] = []
 
+    def set_syntax_tree(self, syntax_tree: ast.AST) -> None:
+        self.syntax_tree = syntax_tree
+
     def visit_AnnAssign(self, ast_node: ast.AnnAssign) -> None:
-        if isinstance(ast_node.target, ast.Name):
+        if isinstance(ast_node.target, ast.Name) and hasattr(self, 'syntax_tree'):
             parent_class: typing.Final = find_parent_class_definition(self.syntax_tree, ast_node)
             parent_function: typing.Final = find_parent_function(self.syntax_tree, ast_node)
             in_class_body: typing.Final = parent_class is not None and parent_function is None

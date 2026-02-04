@@ -16,6 +16,18 @@ def contains_final_decorator(ast_node: ast.ClassDef) -> bool:
     return False
 
 
+def is_protocol_class(ast_node: ast.ClassDef) -> bool:
+    """Check if the class directly inherits from typing.Protocol."""
+    for base in ast_node.bases:
+        # Check for direct Protocol reference: class MyClass(Protocol):
+        if isinstance(base, ast.Name) and base.id == "Protocol":
+            return True
+        # Check for attributed Protocol reference: class MyClass(typing.Protocol):
+        if isinstance(base, ast.Attribute) and base.attr == "Protocol":
+            return True
+    return False
+
+
 @typing.final
 class COP008FinalClassCheck(ast.NodeVisitor):
     def __init__(self) -> None:
@@ -26,7 +38,11 @@ class COP008FinalClassCheck(ast.NodeVisitor):
         self.generic_visit(ast_node)
 
     def _check_final_decorator(self, ast_node: ast.ClassDef) -> None:
-        if not contains_final_decorator(ast_node) and not ast_node.name.startswith("Test"):
+        # Skip Protocol classes and test classes
+        if is_protocol_class(ast_node) or ast_node.name.startswith("Test"):
+            return
+            
+        if not contains_final_decorator(ast_node):
             self.violations.append(
                 Violation(
                     line_number=ast_node.lineno,

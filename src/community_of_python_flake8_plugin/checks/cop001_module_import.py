@@ -3,6 +3,7 @@ import ast
 import typing
 from importlib import util as importlib_util
 
+from community_of_python_flake8_plugin.utils import check_module_has_all_declaration
 from community_of_python_flake8_plugin.violation_codes import ViolationCodes as ViolationCode
 from community_of_python_flake8_plugin.violations import Violation
 
@@ -19,9 +20,14 @@ MAX_IMPORT_NAMES: typing.Final = 2
 
 @typing.final
 class COP001ModuleImportCheck(ast.NodeVisitor):
-    def __init__(self, contains_all_declaration: bool) -> None:
-        self.contains_all_declaration = contains_all_declaration
+    def __init__(self) -> None:
         self.violations: list[Violation] = []
+
+    def set_syntax_tree(self, syntax_tree: ast.AST) -> None:
+        # Store whether this module has an __all__ declaration
+        self.contains_all_declaration = (
+            check_module_has_all_declaration(syntax_tree) if isinstance(syntax_tree, ast.Module) else False
+        )
 
     def visit_ImportFrom(self, ast_node: ast.ImportFrom) -> None:
         if ast_node.module and ast_node.level == 0:
@@ -31,7 +37,7 @@ class COP001ModuleImportCheck(ast.NodeVisitor):
     def validate_import_size(self, ast_node: ast.ImportFrom) -> None:
         if len(ast_node.names) <= MAX_IMPORT_NAMES:
             return
-        if self.contains_all_declaration:
+        if hasattr(self, 'contains_all_declaration') and self.contains_all_declaration:
             return
         module_name: typing.Final = ast_node.module
         if module_name is not None and module_name.endswith(".settings"):
