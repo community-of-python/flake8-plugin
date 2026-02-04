@@ -20,13 +20,11 @@ MAX_IMPORT_NAMES: typing.Final = 2
 
 @typing.final
 class COP001ModuleImportCheck(ast.NodeVisitor):
-    def __init__(self) -> None:
+    def __init__(self, tree: ast.AST) -> None:  # noqa: COP004G
         self.violations: list[Violation] = []
-
-    def set_syntax_tree(self, syntax_tree: ast.AST) -> None:
         # Store whether this module has an __all__ declaration
         self.contains_all_declaration = (
-            check_module_has_all_declaration(syntax_tree) if isinstance(syntax_tree, ast.Module) else False
+            check_module_has_all_declaration(tree) if isinstance(tree, ast.Module) else False
         )
 
     def visit_ImportFrom(self, ast_node: ast.ImportFrom) -> None:
@@ -37,13 +35,13 @@ class COP001ModuleImportCheck(ast.NodeVisitor):
     def validate_import_size(self, ast_node: ast.ImportFrom) -> None:
         if len(ast_node.names) <= MAX_IMPORT_NAMES:
             return
-        if hasattr(self, 'contains_all_declaration') and self.contains_all_declaration:
+        if self.contains_all_declaration:
             return
         module_name: typing.Final = ast_node.module
         if module_name is not None and module_name.endswith(".settings"):
             return
 
-        contains_module_import: typing.Final = any(
+        contains_module_import: typing.Final = any(  # noqa: COP007
             isinstance(identifier, ast.alias)
             and module_name is not None
             and check_module_path_exists(f"{module_name}.{identifier.name}")

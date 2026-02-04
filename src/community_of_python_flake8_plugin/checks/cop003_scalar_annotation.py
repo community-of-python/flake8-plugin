@@ -38,14 +38,12 @@ def check_is_scalar_annotation(annotation: ast.AST) -> bool:
 
 @typing.final
 class COP003ScalarAnnotationCheck(ast.NodeVisitor):
-    def __init__(self) -> None:
+    def __init__(self, tree: ast.AST) -> None:
         self.violations: list[Violation] = []
-
-    def set_syntax_tree(self, syntax_tree: ast.AST) -> None:
-        self.syntax_tree = syntax_tree
+        self.syntax_tree = tree
 
     def visit_AnnAssign(self, ast_node: ast.AnnAssign) -> None:
-        if isinstance(ast_node.target, ast.Name) and hasattr(self, 'syntax_tree'):
+        if isinstance(ast_node.target, ast.Name):
             parent_class: typing.Final = find_parent_class_definition(self.syntax_tree, ast_node)
             parent_function: typing.Final = find_parent_function(self.syntax_tree, ast_node)
             in_class_body: typing.Final = parent_class is not None and parent_function is None

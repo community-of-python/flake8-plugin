@@ -7,57 +7,49 @@ from community_of_python_flake8_plugin.violation_codes import ViolationCodes as 
 from community_of_python_flake8_plugin.violations import Violation
 
 
-def check_is_mapping_literal(value: ast.AST | None) -> bool:
-    if isinstance(value, ast.Dict):
-        return True
-    if isinstance(value, ast.Call):
-        if check_is_typed_dict_call(value):
-            return False
-        return any(isinstance(argument, ast.Dict) for argument in value.args)
-    return False
-
-
-def check_is_typed_dict_call(value: ast.Call) -> bool:
-    if isinstance(value.func, ast.Name) and value.func.id == "TypedDict":
-        return True
-    if isinstance(value.func, ast.Attribute) and value.func.attr == "TypedDict":
-        return isinstance(value.func.value, ast.Name) and value.func.value.id in {
-            "typing",
-            "typing_extensions",
-        }
-    return False
-
-
-def check_is_mapping_proxy_call(value: ast.AST | None) -> bool:
-    if not isinstance(value, ast.Call):
+def is_mapping_proxy_type(annotation: ast.expr | None) -> bool:
+    if annotation is None:
         return False
-    if isinstance(value.func, ast.Name):
-        return value.func.id in MAPPING_PROXY_TYPES
-    if isinstance(value.func, ast.Attribute):
-        return value.func.attr in MAPPING_PROXY_TYPES
+    if isinstance(annotation, ast.Name):
+        return annotation.id in MAPPING_PROXY_TYPES
+    if isinstance(annotation, ast.Attribute):
+        return annotation.attr in MAPPING_PROXY_TYPES
     return False
 
 
 @typing.final
 class COP009MappingProxyCheck(ast.NodeVisitor):
-    def __init__(self) -> None:
+    def __init__(self, tree: ast.AST) -> None:
         self.violations: list[Violation] = []
 
     def visit_Module(self, ast_node: ast.Module) -> None:
         for statement in ast_node.body:
-            self._check_module_assignment(statement)
+            if isinstance(statement, (ast.Assign, ast.AnnAssign)):
+                self._check_mapping_assignment(statement)
         self.generic_visit(ast_node)
 
-    def _check_module_assignment(self, statement: ast.stmt) -> None:
-        value = None
-        if isinstance(statement, (ast.Assign, ast.AnnAssign)):
-            value = statement.value
+    def _check_mapping_assignment(self, ast_node: ast.Assign | ast.AnnAssign) -> None:
+        # Skip annotated assignments with MappingProxyType annotation
+        if isinstance(ast_node, ast.AnnAssign) and is_mapping_proxy_type(ast_node.annotation):
+            return
 
-        if value and check_is_mapping_literal(value) and not check_is_mapping_proxy_call(value):
-            self.violations.append(
-                Violation(
-                    line_number=statement.lineno,
-                    column_number=statement.col_offset,
-                    violation_code=ViolationCode.MAPPING_PROXY,
-                )
-            )
+        # Check for dictionary literals assigned to module-level variables
+        if isinstance(ast_node, ast.Assign):
+            value = ast_node.value
+            targets = ast_node.targets
+        else:  # ast.AnnAssign
+            value = ast_node.value
+            targets = [ast_node.target] if ast_node.value is not None else []
+
+        # Only check module-level assignments (no parent function/class)
+        if value is not None and isinstance(value, ast.Dict) and targets:
+            # Check if this is a module-level assignment
+            for target in targets:
+                if isinstance(target, ast.Name):
+                    self.violations.append(
+                        Violation(
+                            line_number=ast_node.lineno,
+                            column_number=ast_node.col_offset,
+                            violation_code=ViolationCode.MAPPING_PROXY,
+                        )
+                    )

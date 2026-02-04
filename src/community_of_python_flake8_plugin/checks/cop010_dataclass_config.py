@@ -2,83 +2,110 @@ from __future__ import annotations
 import ast
 import typing
 
+from community_of_python_flake8_plugin.constants import FINAL_CLASS_EXCLUDED_BASES
 from community_of_python_flake8_plugin.violation_codes import ViolationCodes as ViolationCode
 from community_of_python_flake8_plugin.violations import Violation
 
 
-def check_is_true_literal(ast_node: ast.AST | None) -> bool:
-    return isinstance(ast_node, ast.Constant) and ast_node.value is True
-
-
-def retrieve_dataclass_decorator(ast_node: ast.ClassDef) -> ast.expr | None:
-    for decorator in ast_node.decorator_list:
-        target_name = decorator.func if isinstance(decorator, ast.Call) else decorator
-        if isinstance(target_name, ast.Name) and target_name.id == "dataclass":
-            return decorator
-        if isinstance(target_name, ast.Attribute) and target_name.attr == "dataclass":
-            return decorator
-    return None
-
-
-def check_is_dataclass(ast_node: ast.ClassDef) -> bool:
-    return retrieve_dataclass_decorator(ast_node) is not None
-
-
-def check_is_exception_class(_node: ast.ClassDef) -> bool:
+def is_dataclass_decorator(decorator: ast.expr) -> bool:
+    """Check if the decorator is a dataclass decorator."""
+    if isinstance(decorator, ast.Call):
+        decorator = decorator.func
+    if isinstance(decorator, ast.Name):
+        return decorator.id == "dataclass"
+    if isinstance(decorator, ast.Attribute):
+        return decorator.attr == "dataclass"
     return False
 
 
-def check_is_inheriting(ast_node: ast.ClassDef) -> bool:
-    return len(ast_node.bases) > 0
-
-
-def check_dataclass_has_keyword(decorator: ast.expr, identifier: str, value: bool | None = None) -> bool:
+def has_required_dataclass_params(decorator: ast.expr) -> bool:
+    """Check if dataclass decorator has the required parameters."""
     if not isinstance(decorator, ast.Call):
         return False
+
+    # Check if all required parameters are present
+    kw_only_present = slots_present = frozen_present = False
     for keyword in decorator.keywords:
-        if keyword.arg != identifier:
-            continue
-        if value is None:
+        if keyword.arg == "kw_only" and isinstance(keyword.value, ast.Constant) and keyword.value.value is True:
+            kw_only_present = True
+        elif keyword.arg == "slots" and isinstance(keyword.value, ast.Constant) and keyword.value.value is True:
+            slots_present = True
+        elif keyword.arg == "frozen" and isinstance(keyword.value, ast.Constant) and keyword.value.value is True:
+            frozen_present = True
+
+    return kw_only_present and slots_present and frozen_present
+
+
+def is_inherited_from_whitelisted_class(class_node: ast.ClassDef) -> bool:
+    """Check if class inherits from whitelisted base classes."""
+    for base_class in class_node.bases:
+        if isinstance(base_class, ast.Name) and base_class.id in FINAL_CLASS_EXCLUDED_BASES:
             return True
-        return isinstance(keyword.value, ast.Constant) and keyword.value.value is value
+        if isinstance(base_class, ast.Attribute) and base_class.attr in FINAL_CLASS_EXCLUDED_BASES:
+            return True
     return False
 
 
-def check_dataclass_has_required_args(decorator: ast.expr, *, require_slots: bool, require_frozen: bool) -> bool:
-    if not isinstance(decorator, ast.Call):
-        return False
-    keywords: typing.Final = {keyword.arg: keyword.value for keyword in decorator.keywords if keyword.arg}
-    if not check_is_true_literal(keywords.get("kw_only")):
-        return False
-    if require_slots and not check_is_true_literal(keywords.get("slots")):
-        return False
-    return not (require_frozen and not check_is_true_literal(keywords.get("frozen")))
+def is_pydantic_model(class_node: ast.ClassDef) -> bool:
+    """Check if class inherits from Pydantic BaseModel or RootModel."""
+    for base_class in class_node.bases:
+        if isinstance(base_class, ast.Name) and base_class.id in {"BaseModel", "RootModel"}:
+            return True
+        if isinstance(base_class, ast.Attribute) and base_class.attr in {"BaseModel", "RootModel"}:
+            return True
+    return False
+
+
+def is_model_factory(class_node: ast.ClassDef) -> bool:
+    """Check if class inherits from ModelFactory."""
+    for base_class in class_node.bases:
+        if isinstance(base_class, ast.Name) and base_class.id == "ModelFactory":
+            return True
+        if isinstance(base_class, ast.Attribute) and base_class.attr == "ModelFactory":
+            return True
+    return False
 
 
 @typing.final
 class COP010DataclassConfigCheck(ast.NodeVisitor):
-    def __init__(self) -> None:
+    def __init__(self, tree: ast.AST) -> None:
         self.violations: list[Violation] = []
 
     def visit_ClassDef(self, ast_node: ast.ClassDef) -> None:
-        self._check_dataclass_config(ast_node)
+        # Skip whitelisted classes and classes that inherit from Exception or other special classes
+        if (
+            is_inherited_from_whitelisted_class(ast_node)
+            or is_pydantic_model(ast_node)
+            or is_model_factory(ast_node)
+            or self._inherits_from_exception(ast_node)
+        ):
+            self.generic_visit(ast_node)
+            return
+
+        # Check for dataclass decorator
+        for decorator in ast_node.decorator_list:
+            if is_dataclass_decorator(decorator):
+                if not has_required_dataclass_params(decorator):
+                    self.violations.append(
+                        Violation(
+                            line_number=ast_node.lineno,
+                            column_number=ast_node.col_offset,
+                            violation_code=ViolationCode.DATACLASS_CONFIG,
+                        )
+                    )
+                break
+
         self.generic_visit(ast_node)
 
-    def _check_dataclass_config(self, ast_node: ast.ClassDef) -> None:
-        if not check_is_dataclass(ast_node):
-            return
-        decorator: typing.Final = retrieve_dataclass_decorator(ast_node)
-        if decorator is None:
-            return
-        if check_is_inheriting(ast_node):
-            return
-        require_slots: typing.Final = not check_dataclass_has_keyword(decorator, "init", value=False)
-        require_frozen: typing.Final = require_slots and not check_is_exception_class(ast_node)
-        if not check_dataclass_has_required_args(decorator, require_slots=require_slots, require_frozen=require_frozen):
-            self.violations.append(
-                Violation(
-                    line_number=ast_node.lineno,
-                    column_number=ast_node.col_offset,
-                    violation_code=ViolationCode.DATACLASS_CONFIG,
-                )
-            )
+    def _inherits_from_exception(self, ast_node: ast.ClassDef) -> bool:
+        """Check if class inherits from Exception or its subclasses."""
+        for base in ast_node.bases:
+            if isinstance(base, ast.Name):
+                # Check if base class name contains "Error" or "Exception"
+                if "Error" in base.id or "Exception" in base.id:
+                    return True
+            elif isinstance(base, ast.Attribute):
+                # Check if base class name contains "Error" or "Exception"
+                if "Error" in base.attr or "Exception" in base.attr:
+                    return True
+        return len(ast_node.bases) > 0  # Skip all classes that inherit from anything

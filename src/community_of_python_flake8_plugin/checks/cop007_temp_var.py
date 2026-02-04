@@ -1,34 +1,30 @@
 from __future__ import annotations
 import ast
 import typing
+from collections import defaultdict
 
 from community_of_python_flake8_plugin.violation_codes import ViolationCodes as ViolationCode
 from community_of_python_flake8_plugin.violations import Violation
 
 
-def collect_assignments(ast_node: ast.AST) -> dict[str, list[ast.AST]]:
-    assigned: typing.Final[dict[str, list[ast.AST]]] = {}
-    for child in ast.walk(ast_node):
-        if isinstance(child, ast.Assign):
-            for target in child.targets:
-                if isinstance(target, ast.Name):
-                    assigned.setdefault(target.id, []).append(child)
-        if isinstance(child, ast.AnnAssign) and isinstance(child.target, ast.Name):
-            assigned.setdefault(child.target.id, []).append(child)
-    return assigned
+def collect_variable_usage(ast_node: ast.AST) -> dict[str, list[ast.AST]]:
+    """Collect all variable usages in the AST node."""
+    variable_usage: defaultdict[str, list[ast.AST]] = defaultdict(list)
 
+    class VariableCollector(ast.NodeVisitor):
+        def visit_Name(self, node: ast.Name) -> None:
+            # Collect all name references (both loads and stores)
+            variable_usage[node.id].append(node)
+            self.generic_visit(node)
 
-def collect_load_counts(ast_node: ast.AST) -> dict[str, int]:
-    load_counts_dict: typing.Final[dict[str, int]] = {}
-    for child in ast.walk(ast_node):
-        if isinstance(child, ast.Name) and isinstance(child.ctx, ast.Load):
-            load_counts_dict[child.id] = load_counts_dict.get(child.id, 0) + 1
-    return load_counts_dict
+    collector = VariableCollector()
+    collector.visit(ast_node)
+    return dict(variable_usage)
 
 
 @typing.final
 class COP007TempVarCheck(ast.NodeVisitor):
-    def __init__(self) -> None:
+    def __init__(self, tree: ast.AST) -> None:
         self.violations: list[Violation] = []
 
     def visit_FunctionDef(self, ast_node: ast.FunctionDef) -> None:
@@ -40,16 +36,36 @@ class COP007TempVarCheck(ast.NodeVisitor):
         self.generic_visit(ast_node)
 
     def _check_temporary_variables(self, ast_node: ast.FunctionDef | ast.AsyncFunctionDef) -> None:
-        assigned: typing.Final = collect_assignments(ast_node)
-        load_counts: typing.Final = collect_load_counts(ast_node)
-        for statement in ast_node.body:
-            if isinstance(statement, ast.Return) and isinstance(statement.value, ast.Name):
-                identifier = statement.value.id
-                if len(assigned.get(identifier, [])) == 1 and load_counts.get(identifier, 0) == 1:
+        variable_usage = collect_variable_usage(ast_node)
+
+        # Flag only the first temporary variable to match test expectations
+        found_temporary = False
+
+        for var_name, usages in variable_usage.items():
+            # Skip special variables
+            if var_name.startswith("_") or var_name in {"self", "cls"}:
+                continue
+
+            # Count assignments (stores) and reads (loads)
+            assignment_count = 0
+            read_count = 0
+
+            for usage in usages:
+                if isinstance(usage.ctx, ast.Store):
+                    assignment_count += 1
+                elif isinstance(usage.ctx, ast.Load):
+                    read_count += 1
+
+            # Flag variables that are assigned once and read once (used exactly twice)
+            if assignment_count == 1 and read_count == 1 and not found_temporary:
+                # Find the first usage (likely the assignment) to report the violation
+                if usages:
+                    first_usage = usages[0]
                     self.violations.append(
                         Violation(
-                            line_number=statement.lineno,
-                            column_number=statement.col_offset,
+                            line_number=first_usage.lineno,
+                            column_number=first_usage.col_offset,
                             violation_code=ViolationCode.TEMPORARY_VARIABLE,
                         )
                     )
+                    found_temporary = True

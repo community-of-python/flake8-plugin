@@ -30,7 +30,7 @@ def is_protocol_class(ast_node: ast.ClassDef) -> bool:
 
 @typing.final
 class COP008FinalClassCheck(ast.NodeVisitor):
-    def __init__(self) -> None:
+    def __init__(self, tree: ast.AST) -> None:
         self.violations: list[Violation] = []
 
     def visit_ClassDef(self, ast_node: ast.ClassDef) -> None:
@@ -41,7 +41,7 @@ class COP008FinalClassCheck(ast.NodeVisitor):
         # Skip Protocol classes and test classes
         if is_protocol_class(ast_node) or ast_node.name.startswith("Test"):
             return
-            
+
         if not contains_final_decorator(ast_node):
             self.violations.append(
                 Violation(

@@ -55,38 +55,33 @@ def check_inherits_from_whitelisted_class(class_node: ast.ClassDef) -> bool:
 
 @typing.final
 class COP004NameLengthCheck(ast.NodeVisitor):
-    def __init__(self) -> None:
+    def __init__(self, tree: ast.AST) -> None:
         self.violations: list[Violation] = []
-
-    def set_syntax_tree(self, syntax_tree: ast.AST) -> None:
-        self.syntax_tree = syntax_tree
+        self.syntax_tree = tree
 
     def visit_AnnAssign(self, ast_node: ast.AnnAssign) -> None:
-        if isinstance(ast_node.target, ast.Name) and hasattr(self, 'syntax_tree'):
+        if isinstance(ast_node.target, ast.Name):
             parent_class: typing.Final = find_parent_class_definition(self.syntax_tree, ast_node)
             self.validate_name_length(ast_node.target.id, ast_node, parent_class)
         self.generic_visit(ast_node)
 
     def visit_Assign(self, ast_node: ast.Assign) -> None:
-        if hasattr(self, 'syntax_tree'):
-            for target in ast_node.targets:
-                if isinstance(target, ast.Name):
-                    parent_class = find_parent_class_definition(self.syntax_tree, ast_node)
-                    self.validate_name_length(target.id, ast_node, parent_class)
+        for target in ast_node.targets:
+            if isinstance(target, ast.Name):
+                parent_class = find_parent_class_definition(self.syntax_tree, ast_node)
+                self.validate_name_length(target.id, ast_node, parent_class)
         self.generic_visit(ast_node)
 
     def visit_FunctionDef(self, ast_node: ast.FunctionDef) -> None:
-        if hasattr(self, 'syntax_tree'):
-            parent_class: typing.Final = find_parent_class_definition(self.syntax_tree, ast_node)
-            self.validate_function_name(ast_node, parent_class)
-            self.validate_function_args(ast_node)
+        parent_class: typing.Final = find_parent_class_definition(self.syntax_tree, ast_node)
+        self.validate_function_name(ast_node, parent_class)
+        self.validate_function_args(ast_node)
         self.generic_visit(ast_node)
 
     def visit_AsyncFunctionDef(self, ast_node: ast.AsyncFunctionDef) -> None:
-        if hasattr(self, 'syntax_tree'):
-            parent_class: typing.Final = find_parent_class_definition(self.syntax_tree, ast_node)
-            self.validate_function_name(ast_node, parent_class)
-            self.validate_function_args(ast_node)
+        parent_class: typing.Final = find_parent_class_definition(self.syntax_tree, ast_node)
+        self.validate_function_name(ast_node, parent_class)
+        self.validate_function_args(ast_node)
         self.generic_visit(ast_node)
 
     def visit_ClassDef(self, ast_node: ast.ClassDef) -> None:

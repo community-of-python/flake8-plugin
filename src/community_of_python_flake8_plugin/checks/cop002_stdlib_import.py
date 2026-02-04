@@ -22,7 +22,7 @@ def check_is_stdlib_package(module_name: str) -> bool:
 
 @typing.final
 class COP002StdlibImportCheck(ast.NodeVisitor):
-    def __init__(self) -> None:
+    def __init__(self, tree: ast.AST) -> None:  # noqa: COP004G
         self.violations: list[Violation] = []
 
     def visit_ImportFrom(self, ast_node: ast.ImportFrom) -> None:
