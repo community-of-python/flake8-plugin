@@ -4,7 +4,7 @@ install:
     uv sync
 
 test *args:
-    uv run --group test pytest {{args}}
+    uv run pytest {{args}}
 
 lint:
     .venv/bin/ruff format
