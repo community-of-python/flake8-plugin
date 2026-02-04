@@ -91,3 +91,4 @@ MAPPING_PROXY_TYPES: typing.Final = {"MappingProxyType"}
 ALLOWED_STDLIB_FROM_IMPORTS: typing.Final = {"collections.abc"}
 
 FINAL_CLASS_EXCLUDED_BASES: typing.Final = {"BaseModel", "RootModel", "ModelFactory"}
+MAX_IMPORT_NAMES: typing.Final = 2

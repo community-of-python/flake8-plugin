@@ -13,7 +13,9 @@ class ViolationCodeItem:
 @typing.final
 class ViolationCodes:
     # Import related violations
-    MODULE_IMPORT = ViolationCodeItem(code="COP001", description="Use module import when importing more than two names")
+    MODULE_IMPORT_MANY_NAMES = ViolationCodeItem(
+        code="COP001", description="Use module import when importing more than two names"
+    )
     STDLIB_IMPORT = ViolationCodeItem(code="COP002", description="Import stdlib modules as whole modules")
 
     # Type annotation violations

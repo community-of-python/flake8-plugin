@@ -3,9 +3,11 @@ import ast
 import typing
 from importlib import util as importlib_util
 
+from community_of_python_flake8_plugin import constants
 from community_of_python_flake8_plugin.utils import check_module_has_all_declaration
-from community_of_python_flake8_plugin.violations import Violation
 from community_of_python_flake8_plugin.violation_codes import ViolationCodes
+from community_of_python_flake8_plugin.violations import Violation
+
 
 def check_module_path_exists(module_name: str) -> bool:
     try:
@@ -14,11 +16,8 @@ def check_module_path_exists(module_name: str) -> bool:
         return False
 
 
-MAX_IMPORT_NAMES: typing.Final = 2
-
-
 @typing.final
-class ModuleImportCheck(ast.NodeVisitor):
+class ModuleImportManyNamesCheck(ast.NodeVisitor):
     def __init__(self, syntax_tree: ast.AST) -> None:  # noqa: ARG002
         self.violations: list[Violation] = []
         self.contains_all_declaration: typing.Final[bool] = (
@@ -31,7 +30,7 @@ class ModuleImportCheck(ast.NodeVisitor):
         self.generic_visit(ast_node)
 
     def validate_import_size(self, ast_node: ast.ImportFrom) -> None:
-        if len(ast_node.names) <= MAX_IMPORT_NAMES:
+        if len(ast_node.names) <= constants.MAX_IMPORT_NAMES:
             return
         if self.contains_all_declaration:
             return
@@ -52,6 +51,6 @@ class ModuleImportCheck(ast.NodeVisitor):
                 Violation(
                     line_number=ast_node.lineno,
                     column_number=ast_node.col_offset,
-                    violation_code=ViolationCodes.MODULE_IMPORT,
+                    violation_code=ViolationCodes.MODULE_IMPORT_MANY_NAMES,
                 )
             )
