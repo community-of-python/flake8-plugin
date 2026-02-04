@@ -38,7 +38,7 @@ def check_is_scalar_annotation(annotation_node: ast.AST) -> bool:
 
 @typing.final
 class COP003ScalarAnnotationCheck(ast.NodeVisitor):
-    def __init__(self, tree: ast.AST) -> None:  # noqa: COP004G
+    def __init__(self, tree: ast.AST) -> None:
         self.violations: list[Violation] = []
         self.syntax_tree: typing.Final[ast.AST] = tree
 

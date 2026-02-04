@@ -10,14 +10,14 @@ lint:
     .venv/bin/ruff format
     .venv/bin/ruff check
     .venv/bin/auto-typing-final .
-    .venv/bin/flake8 --select COP --exclude .venv . --show-source
+    .venv/bin/flake8 .
     .venv/bin/mypy .
 
 lint-ci:
     .venv/bin/ruff format
     .venv/bin/ruff check
     .venv/bin/auto-typing-final .
-    .venv/bin/flake8 --select COP --exclude .venv . --show-source
+    .venv/bin/flake8 .
     .venv/bin/mypy .
 
 publish:

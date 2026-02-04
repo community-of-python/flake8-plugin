@@ -14,7 +14,14 @@ COP = "community_of_python_flake8_plugin.plugin:CommunityOfPythonFlake8Plugin"
 addopts = "--cov"
 
 [dependency-groups]
-dev = ["mypy", "ruff", "auto-typing-final", "pytest", "pytest-cov"]
+dev = [
+    "mypy",
+    "ruff",
+    "auto-typing-final",
+    "pytest",
+    "pytest-cov",
+    "flake8-pyproject",
+]
 
 [build-system]
 requires = ["uv_build"]
@@ -60,6 +67,7 @@ strict = true
 [tool.flake8]
 select = ["COP"]
 exclude = [".venv"]
+show-source = true
 
 [tool.coverage.report]
 exclude_also = ["if typing.TYPE_CHECKING:"]

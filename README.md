@@ -51,7 +51,7 @@ flake8 --select COP --exclude .venv .
 
 ## Configuration
 
-Add the following to your `pyproject.toml`:
+Add the following to your `pyproject.toml` when using https://pypi.org/project/Flake8-pyproject/:
 
 ```toml
 [tool.flake8]
