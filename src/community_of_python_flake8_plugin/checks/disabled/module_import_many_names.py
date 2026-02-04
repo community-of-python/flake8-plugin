@@ -1,3 +1,5 @@
+"""Check is disabled because it doesn't work when flake8 invoked directly, not as python module (.venv/bin/flake8 doesn't work, python -m flake8 works)."""
+
 from __future__ import annotations
 import ast
 import importlib.machinery
