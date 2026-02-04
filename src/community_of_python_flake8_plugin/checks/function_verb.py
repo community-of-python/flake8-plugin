@@ -9,11 +9,7 @@ from community_of_python_flake8_plugin.violations import Violation
 
 
 def check_is_ignored_name(identifier: str) -> bool:
-    if identifier == "_":
-        return True
-    if identifier.isupper():
-        return True
-    if identifier in {"value", "values", "pattern"}:
+    if identifier == "main":
         return True
     if identifier.startswith("__") and identifier.endswith("__"):
         return True
@@ -78,9 +74,7 @@ class FunctionVerbCheck(ast.NodeVisitor):
         self, ast_node: ast.FunctionDef | ast.AsyncFunctionDef, parent_class: ast.ClassDef | None
     ) -> None:
         if (
-            ast_node.name == "main"
-            or (ast_node.name.startswith("__") and ast_node.name.endswith("__"))
-            or check_is_ignored_name(ast_node.name)
+            check_is_ignored_name(ast_node.name)
             or (parent_class and self.check_inherits_from_whitelisted_class(parent_class))
             or check_is_property(ast_node)
             or check_is_pytest_fixture(ast_node)

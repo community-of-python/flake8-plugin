@@ -70,4 +70,6 @@ exclude = [".venv"]
 show-source = true
 
 [tool.coverage.report]
-exclude_also = ["if typing.TYPE_CHECKING:"]
+skip_covered = true
+show_missing = true
+exclude_also = ["if TYPE_CHECKING:"]
