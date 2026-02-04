@@ -21,6 +21,35 @@ def collect_variable_usage(function_node: ast.AST) -> dict[str, list[ast.Name]]:
     return dict(variable_usage)
 
 
+def collect_assignment_stores(function_node: ast.AST) -> set[str]:
+    assigned_variable_names: typing.Final[set[str]] = set()
+
+    def extract_names(expression: ast.expr) -> typing.Iterable[str]:
+        if isinstance(expression, ast.Name):
+            yield expression.id
+        elif isinstance(expression, ast.Tuple):
+            for elt in expression.elts:
+                yield from extract_names(elt)
+
+    @typing.final
+    class AssignmentStoreCollector(ast.NodeVisitor):
+        def visit_Assign(self, assign_node: ast.Assign) -> None:
+            for target in assign_node.targets:
+                assigned_variable_names.update(extract_names(target))
+            self.generic_visit(assign_node)
+
+        def visit_AugAssign(self, aug_assign_node: ast.AugAssign) -> None:
+            assigned_variable_names.update(extract_names(aug_assign_node.target))
+            self.generic_visit(aug_assign_node)
+
+        def visit_AnnAssign(self, ann_assign_node: ast.AnnAssign) -> None:
+            assigned_variable_names.update(extract_names(ann_assign_node.target))
+            self.generic_visit(ann_assign_node)
+
+    AssignmentStoreCollector().visit(function_node)
+    return assigned_variable_names
+
+
 @typing.final
 class TempVarCheck(ast.NodeVisitor):
     def __init__(self, syntax_tree: ast.AST) -> None:  # noqa: ARG002
@@ -43,12 +72,12 @@ class TempVarCheck(ast.NodeVisitor):
             if variable_name.startswith("_") or variable_name in {"self", "cls"}:
                 continue
 
-            # Flag variables that are assigned once and read once (used exactly twice)
+            # Flag variables that are assigned once (in assignment) and read once
             if (
-                sum(1 for usage in usages if isinstance(usage.ctx, ast.Store)) == 1
-                and sum(1 for usage in usages if isinstance(usage.ctx, ast.Load)) == 1
+                len([usage for usage in usages if isinstance(usage.ctx, ast.Store)]) == 1
+                and len([usage for usage in usages if isinstance(usage.ctx, ast.Load)]) == 1
+                and variable_name in collect_assignment_stores(ast_node)
                 and not found_temporary_variable
-                and usages
             ):
                 # Find the first usage (likely the assignment) to report the violation
                 first_usage = usages[0]
