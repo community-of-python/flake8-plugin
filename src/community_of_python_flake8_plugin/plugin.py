@@ -16,24 +16,23 @@ if typing.TYPE_CHECKING:
 class PluginCheckProtocol(typing.Protocol):
     violations: list[Violation]
 
-    def __init__(self, tree: ast.AST) -> None: ...  # noqa: COP004G
-    def visit(self, node: ast.AST) -> None: ...  # noqa: COP004F,COP004G,COP008
+    def __init__(self, tree: ast.AST) -> None: ...  # noqa: COP006
+    def visit(self, node: ast.AST) -> None: ...  # noqa: COP007,COP006,COP012
 
 
 @typing.final
 class CommunityOfPythonFlake8Plugin:
-    name: typing.Final[str] = "community-of-python-flake8-plugin"
-    version: typing.Final[str] = "0.1.27"
+    name: typing.Final[str] = "community-of-python-flake8-plugin"  # noqa: COP004
+    version: typing.Final[str] = "0.1.27"  # noqa: COP004
 
-    def __init__(self, tree: ast.AST) -> None:  # noqa: COP004G
+    def __init__(self, tree: ast.AST) -> None:  # noqa: COP006
         self.ast_syntax_tree: typing.Final[ast.AST] = tree
 
-    def run(self) -> Iterable[tuple[int, int, str, type[object]]]:  # noqa: COP004F
+    def run(self) -> Iterable[tuple[int, int, str, type[object]]]:  # noqa: COP007
         checks_collection: typing.Final[list[PluginCheckProtocol]] = []
 
         for _, module_name, _ in pkgutil.iter_modules(checks_module.__path__):
-            module_full_name = f"{checks_module.__name__}.{module_name}"  # noqa: COP007
-            imported_module = importlib.import_module(module_full_name)
+            imported_module = importlib.import_module(f"{checks_module.__name__}.{module_name}")
 
             for attribute_name in dir(imported_module):
                 attribute = getattr(imported_module, attribute_name)
@@ -44,5 +43,9 @@ class CommunityOfPythonFlake8Plugin:
 
         for check_instance in checks_collection:
             for violation in check_instance.violations:
-                message_text = f"{violation.violation_code.code} {violation.violation_code.description}"
-                yield violation.line_number, violation.column_number, message_text, type(self)
+                yield (
+                    violation.line_number,
+                    violation.column_number,
+                    f"{violation.violation_code.code} {violation.violation_code.description}",
+                    type(self),
+                )

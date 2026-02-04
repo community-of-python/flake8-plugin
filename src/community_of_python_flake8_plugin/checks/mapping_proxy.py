@@ -47,7 +47,7 @@ class MappingProxyCheck(ast.NodeVisitor):
         # Only check module-level assignments (no parent function/class)
         if assigned_value is not None and isinstance(assigned_value, ast.Dict) and assignment_targets:
             # Check if this is a module-level assignment
-            for target in assignment_targets:  # noqa: COP007
+            for target in assignment_targets:  # noqa: COP011
                 if isinstance(target, ast.Name):
                     self.violations.append(
                         Violation(

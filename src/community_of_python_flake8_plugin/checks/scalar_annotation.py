@@ -39,7 +39,7 @@ def check_is_scalar_annotation(annotation_node: ast.AST) -> bool:
 def find_parent_function(syntax_tree: ast.AST, target_node: ast.AST) -> ast.FunctionDef | ast.AsyncFunctionDef | None:
     for potential_parent in ast.walk(syntax_tree):
         if isinstance(potential_parent, (ast.FunctionDef, ast.AsyncFunctionDef)):
-            for child_node in ast.walk(potential_parent):  # noqa: COP007
+            for child_node in ast.walk(potential_parent):  # noqa: COP011
                 if child_node is target_node:
                     return potential_parent
     return None
@@ -47,14 +47,14 @@ def find_parent_function(syntax_tree: ast.AST, target_node: ast.AST) -> ast.Func
 
 @typing.final
 class ScalarAnnotationCheck(ast.NodeVisitor):
-    def __init__(self, tree: ast.AST) -> None:  # noqa: COP004G
+    def __init__(self, tree: ast.AST) -> None:  # noqa: COP006
         self.violations: list[Violation] = []
         self.syntax_tree: typing.Final[ast.AST] = tree
 
     def visit_AnnAssign(self, ast_node: ast.AnnAssign) -> None:
         if isinstance(ast_node.target, ast.Name):
-            parent_class: typing.Final = find_parent_class_definition(self.syntax_tree, ast_node)  # noqa: COP007
-            parent_function: typing.Final = find_parent_function(self.syntax_tree, ast_node)  # noqa: COP007
+            parent_class: typing.Final = find_parent_class_definition(self.syntax_tree, ast_node)  # noqa: COP011
+            parent_function: typing.Final = find_parent_function(self.syntax_tree, ast_node)  # noqa: COP011
             in_class_body: typing.Final = parent_class is not None and parent_function is None
 
             if not in_class_body:

@@ -33,7 +33,7 @@ def check_is_whitelisted_annotation(annotation: ast.expr | None) -> bool:
 def check_is_pytest_fixture(ast_node: ast.AST) -> bool:
     if not isinstance(ast_node, (ast.FunctionDef, ast.AsyncFunctionDef)):
         return False
-    return any(check_is_fixture_decorator(decorator) for decorator in ast_node.decorator_list)  # noqa: COP007
+    return any(check_is_fixture_decorator(decorator) for decorator in ast_node.decorator_list)  # noqa: COP011
 
 
 def check_is_fixture_decorator(decorator: ast.expr) -> bool:
@@ -55,31 +55,31 @@ def check_inherits_from_whitelisted_class(class_node: ast.ClassDef) -> bool:
 
 @typing.final
 class COP004NameLengthCheck(ast.NodeVisitor):
-    def __init__(self, tree: ast.AST) -> None:  # noqa: COP004G
+    def __init__(self, tree: ast.AST) -> None:  # noqa: COP006
         self.violations: list[Violation] = []
         self.syntax_tree: typing.Final[ast.AST] = tree
 
     def visit_AnnAssign(self, ast_node: ast.AnnAssign) -> None:
         if isinstance(ast_node.target, ast.Name):
-            parent_class: typing.Final = find_parent_class_definition(self.syntax_tree, ast_node)  # noqa: COP007
+            parent_class: typing.Final = find_parent_class_definition(self.syntax_tree, ast_node)  # noqa: COP011
             self.validate_name_length(ast_node.target.id, ast_node, parent_class)
         self.generic_visit(ast_node)
 
     def visit_Assign(self, ast_node: ast.Assign) -> None:
         for target in ast_node.targets:
             if isinstance(target, ast.Name):
-                parent_class = find_parent_class_definition(self.syntax_tree, ast_node)  # noqa: COP007
+                parent_class = find_parent_class_definition(self.syntax_tree, ast_node)  # noqa: COP011
                 self.validate_name_length(target.id, ast_node, parent_class)
         self.generic_visit(ast_node)
 
     def visit_FunctionDef(self, ast_node: ast.FunctionDef) -> None:
-        parent_class: typing.Final = find_parent_class_definition(self.syntax_tree, ast_node)  # noqa: COP007
+        parent_class: typing.Final = find_parent_class_definition(self.syntax_tree, ast_node)  # noqa: COP011
         self.validate_function_name(ast_node, parent_class)
         self.validate_function_args(ast_node)
         self.generic_visit(ast_node)
 
     def visit_AsyncFunctionDef(self, ast_node: ast.AsyncFunctionDef) -> None:
-        parent_class: typing.Final = find_parent_class_definition(self.syntax_tree, ast_node)  # noqa: COP007
+        parent_class: typing.Final = find_parent_class_definition(self.syntax_tree, ast_node)  # noqa: COP011
         self.validate_function_name(ast_node, parent_class)
         self.validate_function_args(ast_node)
         self.generic_visit(ast_node)

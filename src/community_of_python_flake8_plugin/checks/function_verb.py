@@ -23,7 +23,7 @@ def check_is_verb_name(identifier: str) -> bool:
 def check_is_property(function_node: ast.AST) -> bool:
     if not isinstance(function_node, (ast.FunctionDef, ast.AsyncFunctionDef)):
         return False
-    return any(check_is_property_decorator(decorator) for decorator in function_node.decorator_list)  # noqa: COP007
+    return any(check_is_property_decorator(decorator) for decorator in function_node.decorator_list)  # noqa: COP011
 
 
 def check_is_property_decorator(decorator: ast.expr) -> bool:
@@ -39,7 +39,7 @@ def check_is_property_decorator(decorator: ast.expr) -> bool:
 def check_is_pytest_fixture(function_node: ast.AST) -> bool:
     if not isinstance(function_node, (ast.FunctionDef, ast.AsyncFunctionDef)):
         return False
-    return any(check_is_fixture_decorator(decorator) for decorator in function_node.decorator_list)  # noqa: COP007
+    return any(check_is_fixture_decorator(decorator) for decorator in function_node.decorator_list)  # noqa: COP011
 
 
 def check_is_fixture_decorator(decorator: ast.expr) -> bool:
@@ -61,12 +61,12 @@ class FunctionVerbCheck(ast.NodeVisitor):
         self.syntax_tree: typing.Final[ast.AST] = syntax_tree
 
     def visit_FunctionDef(self, ast_node: ast.FunctionDef) -> None:
-        parent_class: typing.Final = retrieve_parent_class(self.syntax_tree, ast_node)  # noqa: COP007
+        parent_class: typing.Final = retrieve_parent_class(self.syntax_tree, ast_node)  # noqa: COP011
         self.validate_function_name(ast_node, parent_class)
         self.generic_visit(ast_node)
 
     def visit_AsyncFunctionDef(self, ast_node: ast.AsyncFunctionDef) -> None:
-        parent_class: typing.Final = retrieve_parent_class(self.syntax_tree, ast_node)  # noqa: COP007
+        parent_class: typing.Final = retrieve_parent_class(self.syntax_tree, ast_node)  # noqa: COP011
         self.validate_function_name(ast_node, parent_class)
         self.generic_visit(ast_node)
 

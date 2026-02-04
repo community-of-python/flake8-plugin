@@ -53,7 +53,7 @@ class ModuleImportManyNamesCheck(ast.NodeVisitor):
         if module_name is not None and module_name.endswith(".settings"):
             return
 
-        module_import_exists: typing.Final = any(  # noqa: COP007
+        module_import_exists: typing.Final = any(  # noqa: COP011
             isinstance(identifier, ast.alias)
             and module_name is not None
             and check_module_path_exists(f"{module_name}.{identifier.name}")

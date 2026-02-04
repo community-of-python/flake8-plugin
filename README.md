@@ -9,17 +9,17 @@ This plugin implements the following code style checks:
 - **COP001**: Use module import when importing more than two names
 - **COP002**: Import standard library modules as whole modules
 - **COP003**: Avoid explicit scalar type annotations
-- **COP004A**: Attribute name must be at least 8 characters
-- **COP004V**: Variable name must be at least 8 characters
-- **COP004G**: Argument name must be at least 8 characters
-- **COP004F**: Function name must be at least 8 characters
-- **COP004C**: Class name must be at least 8 characters
-- **COP005**: Function identifier must be a verb
-- **COP006**: Avoid `get_` prefix in async function names
-- **COP007**: Avoid temporary variables used only once
-- **COP008**: Classes should be marked `typing.final`
-- **COP009**: Wrap module dictionaries with `types.MappingProxyType`
-- **COP010**: Use dataclasses with `kw_only=True`, `slots=True`, `frozen=True`
+- **COP004**: Attribute name must be at least 8 characters
+- **COP005**: Variable name must be at least 8 characters
+- **COP006**: Argument name must be at least 8 characters
+- **COP007**: Function name must be at least 8 characters
+- **COP008**: Class name must be at least 8 characters
+- **COP009**: Function identifier must be a verb
+- **COP010**: Avoid `get_` prefix in async function names
+- **COP011**: Avoid temporary variables used only once
+- **COP012**: Classes should be marked `typing.final`
+- **COP013**: Wrap module dictionaries with `types.MappingProxyType`
+- **COP014**: Use dataclasses with `kw_only=True`, `slots=True`, `frozen=True`
 
 ## Installation
 
