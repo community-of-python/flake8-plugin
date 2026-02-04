@@ -3,7 +3,6 @@ import ast
 import typing
 from collections import defaultdict
 
-from community_of_python_flake8_plugin.violation_codes import ViolationCodes as ViolationCode
 from community_of_python_flake8_plugin.violations import Violation
 
 
@@ -56,7 +55,7 @@ class COP007TempVarCheck(ast.NodeVisitor):
                     Violation(
                         line_number=first_usage.lineno,
                         column_number=first_usage.col_offset,
-                        violation_code=ViolationCode.TEMPORARY_VARIABLE,
+                        violation_code=ViolationCodes.TEMPORARY_VARIABLE,
                     )
                 )
                 found_temporary_variable = True

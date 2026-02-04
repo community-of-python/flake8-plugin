@@ -18,7 +18,7 @@ MAX_IMPORT_NAMES: typing.Final = 2
 
 
 @typing.final
-class COP001ModuleImportCheck(ast.NodeVisitor):
+class ModuleImportCheck(ast.NodeVisitor):
     def __init__(self, syntax_tree: ast.AST) -> None:  # noqa: ARG002
         self.violations: list[Violation] = []
         self.contains_all_declaration: typing.Final[bool] = (

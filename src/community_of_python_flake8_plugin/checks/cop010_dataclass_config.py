@@ -3,7 +3,6 @@ import ast
 import typing
 
 from community_of_python_flake8_plugin.constants import FINAL_CLASS_EXCLUDED_BASES
-from community_of_python_flake8_plugin.violation_codes import ViolationCodes as ViolationCode
 from community_of_python_flake8_plugin.violations import Violation
 
 
@@ -94,7 +93,7 @@ class COP010DataclassConfigCheck(ast.NodeVisitor):
                         Violation(
                             line_number=ast_node.lineno,
                             column_number=ast_node.col_offset,
-                            violation_code=ViolationCode.DATACLASS_CONFIG,
+                            violation_code=ViolationCodes.DATACLASS_CONFIG,
                         )
                     )
                 break

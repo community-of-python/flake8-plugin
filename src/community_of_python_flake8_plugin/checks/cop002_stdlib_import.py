@@ -5,7 +5,6 @@ import typing
 from importlib import util as importlib_util
 
 from community_of_python_flake8_plugin.constants import ALLOWED_STDLIB_FROM_IMPORTS
-from community_of_python_flake8_plugin.violation_codes import ViolationCodes as ViolationCode
 from community_of_python_flake8_plugin.violations import Violation
 
 
@@ -44,6 +43,6 @@ class COP002StdlibImportCheck(ast.NodeVisitor):
                 Violation(
                     line_number=ast_node.lineno,
                     column_number=ast_node.col_offset,
-                    violation_code=ViolationCode.STDLIB_IMPORT,
+                    violation_code=ViolationCodes.STDLIB_IMPORT,
                 )
             )

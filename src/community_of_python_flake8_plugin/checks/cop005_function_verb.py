@@ -4,7 +4,6 @@ import typing
 
 from community_of_python_flake8_plugin.constants import FINAL_CLASS_EXCLUDED_BASES, VERB_PREFIXES
 from community_of_python_flake8_plugin.utils import find_parent_class_definition
-from community_of_python_flake8_plugin.violation_codes import ViolationCodes as ViolationCode
 from community_of_python_flake8_plugin.violations import Violation
 
 
@@ -95,7 +94,7 @@ class COP005FunctionVerbCheck(ast.NodeVisitor):
             Violation(
                 line_number=ast_node.lineno,
                 column_number=ast_node.col_offset,
-                violation_code=ViolationCode.FUNCTION_VERB,
+                violation_code=ViolationCodes.FUNCTION_VERB,
             )
         )
 

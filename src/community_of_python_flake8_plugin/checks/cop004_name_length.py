@@ -4,7 +4,6 @@ import typing
 
 from community_of_python_flake8_plugin.constants import FINAL_CLASS_EXCLUDED_BASES, MIN_NAME_LENGTH
 from community_of_python_flake8_plugin.utils import find_parent_class_definition
-from community_of_python_flake8_plugin.violation_codes import ViolationCodes as ViolationCode
 from community_of_python_flake8_plugin.violations import Violation
 
 
@@ -104,12 +103,12 @@ class COP004NameLengthCheck(ast.NodeVisitor):
         if len(identifier) < MIN_NAME_LENGTH:
             # Determine the appropriate violation code based on context
             if isinstance(ast_node, ast.AnnAssign):
-                name_violation_code = ViolationCode.ATTRIBUTE_NAME_LENGTH
+                name_violation_code = ViolationCodes.ATTRIBUTE_NAME_LENGTH
             elif isinstance(ast_node, ast.Assign):
-                name_violation_code = ViolationCode.VARIABLE_NAME_LENGTH
+                name_violation_code = ViolationCodes.VARIABLE_NAME_LENGTH
             else:
                 # This shouldn't happen with current AST node types, but fall back to generic if needed
-                name_violation_code = ViolationCode.ATTRIBUTE_NAME_LENGTH
+                name_violation_code = ViolationCodes.ATTRIBUTE_NAME_LENGTH
 
             self.violations.append(
                 Violation(
@@ -136,7 +135,7 @@ class COP004NameLengthCheck(ast.NodeVisitor):
                 Violation(
                     line_number=ast_node.lineno,
                     column_number=ast_node.col_offset,
-                    violation_code=ViolationCode.FUNCTION_NAME_LENGTH,
+                    violation_code=ViolationCodes.FUNCTION_NAME_LENGTH,
                 )
             )
 
@@ -167,7 +166,7 @@ class COP004NameLengthCheck(ast.NodeVisitor):
                 Violation(
                     line_number=argument.lineno,
                     column_number=argument.col_offset,
-                    violation_code=ViolationCode.ARGUMENT_NAME_LENGTH,
+                    violation_code=ViolationCodes.ARGUMENT_NAME_LENGTH,
                 )
             )
 
@@ -180,6 +179,6 @@ class COP004NameLengthCheck(ast.NodeVisitor):
                 Violation(
                     line_number=ast_node.lineno,
                     column_number=ast_node.col_offset,
-                    violation_code=ViolationCode.CLASS_NAME_LENGTH,
+                    violation_code=ViolationCodes.CLASS_NAME_LENGTH,
                 )
             )

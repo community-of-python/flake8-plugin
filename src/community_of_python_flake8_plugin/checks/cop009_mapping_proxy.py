@@ -3,7 +3,6 @@ import ast
 import typing
 
 from community_of_python_flake8_plugin.constants import MAPPING_PROXY_TYPES
-from community_of_python_flake8_plugin.violation_codes import ViolationCodes as ViolationCode
 from community_of_python_flake8_plugin.violations import Violation
 
 
@@ -53,6 +52,6 @@ class COP009MappingProxyCheck(ast.NodeVisitor):
                         Violation(
                             line_number=ast_node.lineno,
                             column_number=ast_node.col_offset,
-                            violation_code=ViolationCode.MAPPING_PROXY,
+                            violation_code=ViolationCodes.MAPPING_PROXY,
                         )
                     )
