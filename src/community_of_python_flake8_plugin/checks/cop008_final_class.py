@@ -6,8 +6,8 @@ from community_of_python_flake8_plugin.violation_codes import ViolationCodes as 
 from community_of_python_flake8_plugin.violations import Violation
 
 
-def contains_final_decorator(ast_node: ast.ClassDef) -> bool:
-    for decorator in ast_node.decorator_list:
+def contains_final_decorator(class_node: ast.ClassDef) -> bool:
+    for decorator in class_node.decorator_list:
         target_name = decorator.func if isinstance(decorator, ast.Call) else decorator
         if isinstance(target_name, ast.Name) and target_name.id == "final":
             return True
@@ -16,9 +16,9 @@ def contains_final_decorator(ast_node: ast.ClassDef) -> bool:
     return False
 
 
-def is_protocol_class(ast_node: ast.ClassDef) -> bool:
+def is_protocol_class(class_node: ast.ClassDef) -> bool:
     """Check if the class directly inherits from typing.Protocol."""
-    for base in ast_node.bases:
+    for base in class_node.bases:
         # Check for direct Protocol reference: class MyClass(Protocol):
         if isinstance(base, ast.Name) and base.id == "Protocol":
             return True
@@ -30,7 +30,7 @@ def is_protocol_class(ast_node: ast.ClassDef) -> bool:
 
 @typing.final
 class COP008FinalClassCheck(ast.NodeVisitor):
-    def __init__(self, tree: ast.AST) -> None:
+    def __init__(self, tree: ast.AST) -> None:  # noqa: COP004G
         self.violations: list[Violation] = []
 
     def visit_ClassDef(self, ast_node: ast.ClassDef) -> None:

@@ -13,7 +13,7 @@ def check_is_verb_name(identifier: str) -> bool:
 
 @typing.final
 class COP006AsyncGetPrefixCheck(ast.NodeVisitor):
-    def __init__(self, tree: ast.AST) -> None:
+    def __init__(self, tree: ast.AST) -> None:  # noqa: COP004G
         self.violations: list[Violation] = []
 
     def visit_AsyncFunctionDef(self, ast_node: ast.AsyncFunctionDef) -> None:

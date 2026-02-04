@@ -22,30 +22,30 @@ class PluginCheckProtocol(typing.Protocol):
 
 @typing.final
 class CommunityOfPythonFlake8Plugin:
-    name = "community-of-python-flake8-plugin"  # noqa: COP004V
-    version = "0.1.27"  # noqa: COP004V
+    plugin_name: typing.Final[str] = "community-of-python-flake8-plugin"
+    plugin_version: typing.Final[str] = "0.1.27"
 
     def __init__(self, tree: ast.AST) -> None:  # noqa: COP004G
-        self.ast_syntax_tree = tree
+        self.ast_syntax_tree: typing.Final[ast.AST] = tree
 
     def run(self) -> Iterable[tuple[int, int, str, type[object]]]:  # noqa: COP004F
-        plugin_checks_collection = []
+        checks_collection: typing.Final[list[PluginCheckProtocol]] = []
+
         for _, module_name, _ in pkgutil.iter_modules(checks_module.__path__):
             if module_name == "__init__":
                 continue
-            full_module_name = f"{checks_module.__name__}.{module_name}"
-            imported_module = importlib.import_module(full_module_name)
+
+            module_full_name = f"{checks_module.__name__}.{module_name}"  # noqa: COP007
+            imported_module = importlib.import_module(module_full_name)
 
             for attribute_name in dir(imported_module):
                 attribute = getattr(imported_module, attribute_name)
                 if isinstance(attribute, type) and attribute_name.endswith("Check") and hasattr(attribute, "visit"):
-                    instance = attribute(self.ast_syntax_tree)
-                    instance.visit(self.ast_syntax_tree)
-                    plugin_checks_collection.append(instance)
+                    check_instance = attribute(self.ast_syntax_tree)
+                    check_instance.visit(self.ast_syntax_tree)
+                    checks_collection.append(check_instance)
 
-        for check_instance in plugin_checks_collection:
-            for violation_record in check_instance.violations:
-                violation_message = (
-                    f"{violation_record.violation_code.code} {violation_record.violation_code.description}"
-                )
-                yield violation_record.line_number, violation_record.column_number, violation_message, type(self)
+        for check_instance in checks_collection:
+            for violation in check_instance.violations:
+                message_text = f"{violation.violation_code.code} {violation.violation_code.description}"
+                yield violation.line_number, violation.column_number, message_text, type(self)

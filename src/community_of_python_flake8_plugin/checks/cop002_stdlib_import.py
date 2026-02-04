@@ -16,8 +16,8 @@ def check_is_stdlib_module(module_name: str) -> bool:
 def check_is_stdlib_package(module_name: str) -> bool:
     if not check_is_stdlib_module(module_name):
         return False
-    module_spec: typing.Final = importlib_util.find_spec(module_name)
-    return module_spec is not None and module_spec.submodule_search_locations is not None
+    module_specification: typing.Final = importlib_util.find_spec(module_name)
+    return module_specification is not None and module_specification.submodule_search_locations is not None
 
 
 @typing.final
@@ -36,8 +36,10 @@ class COP002StdlibImportCheck(ast.NodeVisitor):
             return
         if module_name == "__future__":
             return
-        if (check_is_stdlib_module(module_name) and not check_is_stdlib_package(module_name)) or (
-            "." in module_name and check_is_stdlib_package(module_name.split(".")[0])
+            
+        if (
+            (check_is_stdlib_module(module_name) and not check_is_stdlib_package(module_name))
+            or ("." in module_name and check_is_stdlib_package(module_name.split(".")[0]))
         ):
             self.violations.append(
                 Violation(

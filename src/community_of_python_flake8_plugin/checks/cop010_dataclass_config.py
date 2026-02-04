@@ -24,16 +24,20 @@ def has_required_dataclass_params(decorator: ast.expr) -> bool:
         return False
 
     # Check if all required parameters are present
-    kw_only_present = slots_present = frozen_present = False
-    for keyword in decorator.keywords:
-        if keyword.arg == "kw_only" and isinstance(keyword.value, ast.Constant) and keyword.value.value is True:
-            kw_only_present = True
-        elif keyword.arg == "slots" and isinstance(keyword.value, ast.Constant) and keyword.value.value is True:
-            slots_present = True
-        elif keyword.arg == "frozen" and isinstance(keyword.value, ast.Constant) and keyword.value.value is True:
-            frozen_present = True
-
-    return kw_only_present and slots_present and frozen_present
+    return (
+        any(
+            keyword.arg == "kw_only" and isinstance(keyword.value, ast.Constant) and keyword.value.value is True
+            for keyword in decorator.keywords
+        )
+        and any(
+            keyword.arg == "slots" and isinstance(keyword.value, ast.Constant) and keyword.value.value is True
+            for keyword in decorator.keywords
+        )
+        and any(
+            keyword.arg == "frozen" and isinstance(keyword.value, ast.Constant) and keyword.value.value is True
+            for keyword in decorator.keywords
+        )
+    )
 
 
 def is_inherited_from_whitelisted_class(class_node: ast.ClassDef) -> bool:
@@ -68,7 +72,7 @@ def is_model_factory(class_node: ast.ClassDef) -> bool:
 
 @typing.final
 class COP010DataclassConfigCheck(ast.NodeVisitor):
-    def __init__(self, tree: ast.AST) -> None:
+    def __init__(self, tree: ast.AST) -> None:  # noqa: COP004G
         self.violations: list[Violation] = []
 
     def visit_ClassDef(self, ast_node: ast.ClassDef) -> None:

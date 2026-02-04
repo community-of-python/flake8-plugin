@@ -8,44 +8,44 @@ from community_of_python_flake8_plugin.violation_codes import ViolationCodes as 
 from community_of_python_flake8_plugin.violations import Violation
 
 
-def check_is_literal_value(value: ast.AST) -> bool:
-    if isinstance(value, ast.Constant):
+def check_is_literal_value(node_value: ast.AST) -> bool:
+    if isinstance(node_value, ast.Constant):
         return True
-    return bool(isinstance(value, (ast.List, ast.Tuple, ast.Set, ast.Dict)))
+    return bool(isinstance(node_value, (ast.List, ast.Tuple, ast.Set, ast.Dict)))
 
 
-def check_is_final_annotation(annotation: ast.AST) -> bool:
-    if isinstance(annotation, ast.Name):
-        return annotation.id == "Final"
-    if isinstance(annotation, ast.Attribute):
-        return annotation.attr == "Final"
-    if isinstance(annotation, ast.Subscript):
-        return check_is_final_annotation(annotation.value)
+def check_is_final_annotation(annotation_node: ast.AST) -> bool:
+    if isinstance(annotation_node, ast.Name):
+        return annotation_node.id == "Final"
+    if isinstance(annotation_node, ast.Attribute):
+        return annotation_node.attr == "Final"
+    if isinstance(annotation_node, ast.Subscript):
+        return check_is_final_annotation(annotation_node.value)
     return False
 
 
-def check_is_scalar_annotation(annotation: ast.AST) -> bool:
-    if isinstance(annotation, ast.Name):
-        return annotation.id in SCALAR_ANNOTATIONS
-    if isinstance(annotation, ast.Attribute):
-        return annotation.attr in SCALAR_ANNOTATIONS
-    if isinstance(annotation, ast.Subscript):
-        if check_is_final_annotation(annotation.value):
-            return check_is_scalar_annotation(annotation.slice)
-        return check_is_scalar_annotation(annotation.value)
+def check_is_scalar_annotation(annotation_node: ast.AST) -> bool:
+    if isinstance(annotation_node, ast.Name):
+        return annotation_node.id in SCALAR_ANNOTATIONS
+    if isinstance(annotation_node, ast.Attribute):
+        return annotation_node.attr in SCALAR_ANNOTATIONS
+    if isinstance(annotation_node, ast.Subscript):
+        if check_is_final_annotation(annotation_node.value):
+            return check_is_scalar_annotation(annotation_node.slice)
+        return check_is_scalar_annotation(annotation_node.value)
     return False
 
 
 @typing.final
 class COP003ScalarAnnotationCheck(ast.NodeVisitor):
-    def __init__(self, tree: ast.AST) -> None:
+    def __init__(self, tree: ast.AST) -> None:  # noqa: COP004G
         self.violations: list[Violation] = []
-        self.syntax_tree = tree
+        self.syntax_tree: typing.Final[ast.AST] = tree
 
     def visit_AnnAssign(self, ast_node: ast.AnnAssign) -> None:
         if isinstance(ast_node.target, ast.Name):
-            parent_class: typing.Final = find_parent_class_definition(self.syntax_tree, ast_node)
-            parent_function: typing.Final = find_parent_function(self.syntax_tree, ast_node)
+            parent_class: typing.Final = find_parent_class_definition(self.syntax_tree, ast_node)  # noqa: COP007
+            parent_function: typing.Final = find_parent_function(self.syntax_tree, ast_node)  # noqa: COP007
             in_class_body: typing.Final = parent_class is not None and parent_function is None
 
             if not in_class_body:

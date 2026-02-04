@@ -33,7 +33,7 @@ def check_is_whitelisted_annotation(annotation: ast.expr | None) -> bool:
 def check_is_pytest_fixture(ast_node: ast.AST) -> bool:
     if not isinstance(ast_node, (ast.FunctionDef, ast.AsyncFunctionDef)):
         return False
-    return any(check_is_fixture_decorator(decorator) for decorator in ast_node.decorator_list)
+    return any(check_is_fixture_decorator(decorator) for decorator in ast_node.decorator_list)  # noqa: COP007
 
 
 def check_is_fixture_decorator(decorator: ast.expr) -> bool:
@@ -55,31 +55,31 @@ def check_inherits_from_whitelisted_class(class_node: ast.ClassDef) -> bool:
 
 @typing.final
 class COP004NameLengthCheck(ast.NodeVisitor):
-    def __init__(self, tree: ast.AST) -> None:
+    def __init__(self, tree: ast.AST) -> None:  # noqa: COP004G
         self.violations: list[Violation] = []
-        self.syntax_tree = tree
+        self.syntax_tree: typing.Final[ast.AST] = tree
 
     def visit_AnnAssign(self, ast_node: ast.AnnAssign) -> None:
         if isinstance(ast_node.target, ast.Name):
-            parent_class: typing.Final = find_parent_class_definition(self.syntax_tree, ast_node)
+            parent_class: typing.Final = find_parent_class_definition(self.syntax_tree, ast_node)  # noqa: COP007
             self.validate_name_length(ast_node.target.id, ast_node, parent_class)
         self.generic_visit(ast_node)
 
     def visit_Assign(self, ast_node: ast.Assign) -> None:
         for target in ast_node.targets:
             if isinstance(target, ast.Name):
-                parent_class = find_parent_class_definition(self.syntax_tree, ast_node)
+                parent_class = find_parent_class_definition(self.syntax_tree, ast_node)  # noqa: COP007
                 self.validate_name_length(target.id, ast_node, parent_class)
         self.generic_visit(ast_node)
 
     def visit_FunctionDef(self, ast_node: ast.FunctionDef) -> None:
-        parent_class: typing.Final = find_parent_class_definition(self.syntax_tree, ast_node)
+        parent_class: typing.Final = find_parent_class_definition(self.syntax_tree, ast_node)  # noqa: COP007
         self.validate_function_name(ast_node, parent_class)
         self.validate_function_args(ast_node)
         self.generic_visit(ast_node)
 
     def visit_AsyncFunctionDef(self, ast_node: ast.AsyncFunctionDef) -> None:
-        parent_class: typing.Final = find_parent_class_definition(self.syntax_tree, ast_node)
+        parent_class: typing.Final = find_parent_class_definition(self.syntax_tree, ast_node)  # noqa: COP007
         self.validate_function_name(ast_node, parent_class)
         self.validate_function_args(ast_node)
         self.generic_visit(ast_node)
@@ -92,6 +92,7 @@ class COP004NameLengthCheck(ast.NodeVisitor):
     def validate_name_length(self, identifier: str, ast_node: ast.stmt, parent_class: ast.ClassDef | None) -> None:
         if check_is_ignored_name(identifier):
             return
+            
         # Only apply parent class exemption for assignments within classes
         if (
             parent_class
@@ -99,21 +100,22 @@ class COP004NameLengthCheck(ast.NodeVisitor):
             and check_inherits_from_whitelisted_class(parent_class)
         ):
             return
+            
         if len(identifier) < MIN_NAME_LENGTH:
             # Determine the appropriate violation code based on context
             if isinstance(ast_node, ast.AnnAssign):
-                violation_code = ViolationCode.ATTRIBUTE_NAME_LENGTH
+                name_violation_code = ViolationCode.ATTRIBUTE_NAME_LENGTH
             elif isinstance(ast_node, ast.Assign):
-                violation_code = ViolationCode.VARIABLE_NAME_LENGTH
+                name_violation_code = ViolationCode.VARIABLE_NAME_LENGTH
             else:
                 # This shouldn't happen with current AST node types, but fall back to generic if needed
-                violation_code = ViolationCode.ATTRIBUTE_NAME_LENGTH
+                name_violation_code = ViolationCode.ATTRIBUTE_NAME_LENGTH
 
             self.violations.append(
                 Violation(
                     line_number=ast_node.lineno,
                     column_number=ast_node.col_offset,
-                    violation_code=violation_code,
+                    violation_code=name_violation_code,
                 )
             )
 
@@ -128,6 +130,7 @@ class COP004NameLengthCheck(ast.NodeVisitor):
             return
         if check_is_pytest_fixture(ast_node):
             return
+            
         if len(ast_node.name) < MIN_NAME_LENGTH:
             self.violations.append(
                 Violation(
@@ -138,13 +141,18 @@ class COP004NameLengthCheck(ast.NodeVisitor):
             )
 
     def validate_function_args(self, ast_node: ast.FunctionDef | ast.AsyncFunctionDef) -> None:
-        arguments: typing.Final = ast_node.args
-        for argument in arguments.posonlyargs + arguments.args + arguments.kwonlyargs:
+        # Process all argument types
+        for argument in ast_node.args.posonlyargs:
             self.validate_argument_name_length(argument)
-        if arguments.vararg is not None:
-            self.validate_argument_name_length(arguments.vararg)
-        if arguments.kwarg is not None:
-            self.validate_argument_name_length(arguments.kwarg)
+        for argument in ast_node.args.args:
+            self.validate_argument_name_length(argument)
+        for argument in ast_node.args.kwonlyargs:
+            self.validate_argument_name_length(argument)
+            
+        if ast_node.args.vararg is not None:
+            self.validate_argument_name_length(ast_node.args.vararg)
+        if ast_node.args.kwarg is not None:
+            self.validate_argument_name_length(ast_node.args.kwarg)
 
     def validate_argument_name_length(self, argument: ast.arg) -> None:
         if argument.arg in {"self", "cls"}:
@@ -153,6 +161,7 @@ class COP004NameLengthCheck(ast.NodeVisitor):
             return
         if check_is_whitelisted_annotation(argument.annotation):
             return
+            
         if len(argument.arg) < MIN_NAME_LENGTH:
             self.violations.append(
                 Violation(
@@ -165,6 +174,7 @@ class COP004NameLengthCheck(ast.NodeVisitor):
     def validate_class_name_length(self, ast_node: ast.ClassDef) -> None:
         if check_is_ignored_name(ast_node.name):
             return
+            
         if len(ast_node.name) < MIN_NAME_LENGTH:
             self.violations.append(
                 Violation(

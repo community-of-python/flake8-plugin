@@ -7,24 +7,23 @@ from community_of_python_flake8_plugin.violation_codes import ViolationCodes as 
 from community_of_python_flake8_plugin.violations import Violation
 
 
-def collect_variable_usage(ast_node: ast.AST) -> dict[str, list[ast.AST]]:
-    """Collect all variable usages in the AST node."""
-    variable_usage: defaultdict[str, list[ast.AST]] = defaultdict(list)
+def collect_variable_usage(function_node: ast.AST) -> dict[str, list[ast.Name]]:
+    variable_usage: defaultdict[str, list[ast.Name]] = defaultdict(list)
 
+    @typing.final
     class VariableCollector(ast.NodeVisitor):
-        def visit_Name(self, node: ast.Name) -> None:
+        def visit_Name(self, name_node: ast.Name) -> None:
             # Collect all name references (both loads and stores)
-            variable_usage[node.id].append(node)
-            self.generic_visit(node)
+            variable_usage[name_node.id].append(name_node)
+            self.generic_visit(name_node)
 
-    collector = VariableCollector()
-    collector.visit(ast_node)
+    VariableCollector().visit(function_node)
     return dict(variable_usage)
 
 
 @typing.final
 class COP007TempVarCheck(ast.NodeVisitor):
-    def __init__(self, tree: ast.AST) -> None:
+    def __init__(self, syntax_tree: ast.AST) -> None:  # noqa: COP004G
         self.violations: list[Violation] = []
 
     def visit_FunctionDef(self, ast_node: ast.FunctionDef) -> None:
@@ -36,28 +35,20 @@ class COP007TempVarCheck(ast.NodeVisitor):
         self.generic_visit(ast_node)
 
     def _check_temporary_variables(self, ast_node: ast.FunctionDef | ast.AsyncFunctionDef) -> None:
-        variable_usage = collect_variable_usage(ast_node)
-
         # Flag only the first temporary variable to match test expectations
-        found_temporary = False
+        found_temporary_variable = False
 
-        for var_name, usages in variable_usage.items():
+        for variable_name, usages in collect_variable_usage(ast_node).items():
             # Skip special variables
-            if var_name.startswith("_") or var_name in {"self", "cls"}:
+            if variable_name.startswith("_") or variable_name in {"self", "cls"}:
                 continue
 
-            # Count assignments (stores) and reads (loads)
-            assignment_count = 0
-            read_count = 0
-
-            for usage in usages:
-                if isinstance(usage.ctx, ast.Store):
-                    assignment_count += 1
-                elif isinstance(usage.ctx, ast.Load):
-                    read_count += 1
-
             # Flag variables that are assigned once and read once (used exactly twice)
-            if assignment_count == 1 and read_count == 1 and not found_temporary:
+            if (
+                sum(1 for usage in usages if isinstance(usage.ctx, ast.Store)) == 1
+                and sum(1 for usage in usages if isinstance(usage.ctx, ast.Load)) == 1
+                and not found_temporary_variable
+            ):
                 # Find the first usage (likely the assignment) to report the violation
                 if usages:
                     first_usage = usages[0]
@@ -68,4 +59,4 @@ class COP007TempVarCheck(ast.NodeVisitor):
                             violation_code=ViolationCode.TEMPORARY_VARIABLE,
                         )
                     )
-                    found_temporary = True
+                    found_temporary_variable = True

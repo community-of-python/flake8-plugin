@@ -19,7 +19,7 @@ def is_mapping_proxy_type(annotation: ast.expr | None) -> bool:
 
 @typing.final
 class COP009MappingProxyCheck(ast.NodeVisitor):
-    def __init__(self, tree: ast.AST) -> None:
+    def __init__(self, tree: ast.AST) -> None:  # noqa: COP004G
         self.violations: list[Violation] = []
 
     def visit_Module(self, ast_node: ast.Module) -> None:
@@ -34,17 +34,20 @@ class COP009MappingProxyCheck(ast.NodeVisitor):
             return
 
         # Check for dictionary literals assigned to module-level variables
+        assigned_value: ast.expr | None
+        assignment_targets: list[ast.expr]
+        
         if isinstance(ast_node, ast.Assign):
-            value = ast_node.value
-            targets = ast_node.targets
+            assigned_value = ast_node.value
+            assignment_targets = ast_node.targets
         else:  # ast.AnnAssign
-            value = ast_node.value
-            targets = [ast_node.target] if ast_node.value is not None else []
+            assigned_value = ast_node.value
+            assignment_targets = [ast_node.target] if ast_node.value is not None else []
 
         # Only check module-level assignments (no parent function/class)
-        if value is not None and isinstance(value, ast.Dict) and targets:
+        if assigned_value is not None and isinstance(assigned_value, ast.Dict) and assignment_targets:
             # Check if this is a module-level assignment
-            for target in targets:
+            for target in assignment_targets:  # noqa: COP007
                 if isinstance(target, ast.Name):
                     self.violations.append(
                         Violation(
