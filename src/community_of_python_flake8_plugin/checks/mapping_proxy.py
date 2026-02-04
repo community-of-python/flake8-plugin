@@ -17,7 +17,7 @@ def is_mapping_proxy_type(annotation: ast.expr | None) -> bool:
 
 
 @typing.final
-class COP009MappingProxyCheck(ast.NodeVisitor):
+class MappingProxyCheck(ast.NodeVisitor):
     def __init__(self, syntax_tree: ast.AST) -> None:  # noqa: ARG002
         self.violations: list[Violation] = []
 
