@@ -30,7 +30,7 @@ def is_protocol_class(class_node: ast.ClassDef) -> bool:
 
 @typing.final
 class COP008FinalClassCheck(ast.NodeVisitor):
-    def __init__(self, tree: ast.AST) -> None:  # noqa: COP004G
+    def __init__(self, syntax_tree: ast.AST) -> None:  # noqa: ARG002
         self.violations: list[Violation] = []
 
     def visit_ClassDef(self, ast_node: ast.ClassDef) -> None:

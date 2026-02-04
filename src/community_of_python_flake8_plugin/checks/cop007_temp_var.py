@@ -8,7 +8,7 @@ from community_of_python_flake8_plugin.violations import Violation
 
 
 def collect_variable_usage(function_node: ast.AST) -> dict[str, list[ast.Name]]:
-    variable_usage: defaultdict[str, list[ast.Name]] = defaultdict(list)
+    variable_usage: typing.Final[defaultdict[str, list[ast.Name]]] = defaultdict(list)
 
     @typing.final
     class VariableCollector(ast.NodeVisitor):
@@ -23,7 +23,7 @@ def collect_variable_usage(function_node: ast.AST) -> dict[str, list[ast.Name]]:
 
 @typing.final
 class COP007TempVarCheck(ast.NodeVisitor):
-    def __init__(self, syntax_tree: ast.AST) -> None:  # noqa: COP004G
+    def __init__(self, syntax_tree: ast.AST) -> None:  # noqa: ARG002
         self.violations: list[Violation] = []
 
     def visit_FunctionDef(self, ast_node: ast.FunctionDef) -> None:
@@ -48,15 +48,15 @@ class COP007TempVarCheck(ast.NodeVisitor):
                 sum(1 for usage in usages if isinstance(usage.ctx, ast.Store)) == 1
                 and sum(1 for usage in usages if isinstance(usage.ctx, ast.Load)) == 1
                 and not found_temporary_variable
+                and usages
             ):
                 # Find the first usage (likely the assignment) to report the violation
-                if usages:
-                    first_usage = usages[0]
-                    self.violations.append(
-                        Violation(
-                            line_number=first_usage.lineno,
-                            column_number=first_usage.col_offset,
-                            violation_code=ViolationCode.TEMPORARY_VARIABLE,
-                        )
+                first_usage = usages[0]
+                self.violations.append(
+                    Violation(
+                        line_number=first_usage.lineno,
+                        column_number=first_usage.col_offset,
+                        violation_code=ViolationCode.TEMPORARY_VARIABLE,
                     )
-                    found_temporary_variable = True
+                )
+                found_temporary_variable = True

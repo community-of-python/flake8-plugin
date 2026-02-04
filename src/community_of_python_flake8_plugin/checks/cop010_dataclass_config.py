@@ -72,7 +72,7 @@ def is_model_factory(class_node: ast.ClassDef) -> bool:
 
 @typing.final
 class COP010DataclassConfigCheck(ast.NodeVisitor):
-    def __init__(self, tree: ast.AST) -> None:  # noqa: COP004G
+    def __init__(self, syntax_tree: ast.AST) -> None:  # noqa: ARG002
         self.violations: list[Violation] = []
 
     def visit_ClassDef(self, ast_node: ast.ClassDef) -> None:
@@ -104,12 +104,8 @@ class COP010DataclassConfigCheck(ast.NodeVisitor):
     def _inherits_from_exception(self, ast_node: ast.ClassDef) -> bool:
         """Check if class inherits from Exception or its subclasses."""
         for base in ast_node.bases:
-            if isinstance(base, ast.Name):
-                # Check if base class name contains "Error" or "Exception"
-                if "Error" in base.id or "Exception" in base.id:
-                    return True
-            elif isinstance(base, ast.Attribute):
-                # Check if base class name contains "Error" or "Exception"
-                if "Error" in base.attr or "Exception" in base.attr:
-                    return True
+            if (isinstance(base, ast.Name) and ("Error" in base.id or "Exception" in base.id)) or (
+                isinstance(base, ast.Attribute) and ("Error" in base.attr or "Exception" in base.attr)
+            ):
+                return True
         return len(ast_node.bases) > 0  # Skip all classes that inherit from anything

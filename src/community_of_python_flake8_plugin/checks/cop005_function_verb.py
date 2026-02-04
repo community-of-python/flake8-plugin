@@ -60,9 +60,9 @@ def retrieve_parent_class(syntax_tree: ast.AST, ast_node: ast.AST) -> ast.ClassD
 
 @typing.final
 class COP005FunctionVerbCheck(ast.NodeVisitor):
-    def __init__(self, tree: ast.AST) -> None:  # noqa: COP004G
+    def __init__(self, syntax_tree: ast.AST) -> None:  # noqa: ARG002
         self.violations: list[Violation] = []
-        self.syntax_tree: typing.Final[ast.AST] = tree
+        self.syntax_tree: typing.Final[ast.AST] = syntax_tree
 
     def visit_FunctionDef(self, ast_node: ast.FunctionDef) -> None:
         parent_class: typing.Final = retrieve_parent_class(self.syntax_tree, ast_node)  # noqa: COP007
@@ -88,7 +88,7 @@ class COP005FunctionVerbCheck(ast.NodeVisitor):
         ):
             return
 
-        if len(ast_node.name) < 3:  # Short names are likely acronyms or special cases
+        if len(ast_node.name) < 3:  # noqa: PLR2004  # Short names are likely acronyms or special cases
             return
 
         self.violations.append(

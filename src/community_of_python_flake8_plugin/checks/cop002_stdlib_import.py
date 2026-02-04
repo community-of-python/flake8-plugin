@@ -22,7 +22,7 @@ def check_is_stdlib_package(module_name: str) -> bool:
 
 @typing.final
 class COP002StdlibImportCheck(ast.NodeVisitor):
-    def __init__(self, tree: ast.AST) -> None:  # noqa: COP004G
+    def __init__(self, syntax_tree: ast.AST) -> None:  # noqa: ARG002
         self.violations: list[Violation] = []
 
     def visit_ImportFrom(self, ast_node: ast.ImportFrom) -> None:
@@ -36,10 +36,9 @@ class COP002StdlibImportCheck(ast.NodeVisitor):
             return
         if module_name == "__future__":
             return
-            
-        if (
-            (check_is_stdlib_module(module_name) and not check_is_stdlib_package(module_name))
-            or ("." in module_name and check_is_stdlib_package(module_name.split(".")[0]))
+
+        if (check_is_stdlib_module(module_name) and not check_is_stdlib_package(module_name)) or (
+            "." in module_name and check_is_stdlib_package(module_name.split(".")[0])
         ):
             self.violations.append(
                 Violation(

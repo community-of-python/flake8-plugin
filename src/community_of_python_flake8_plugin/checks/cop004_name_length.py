@@ -92,7 +92,7 @@ class COP004NameLengthCheck(ast.NodeVisitor):
     def validate_name_length(self, identifier: str, ast_node: ast.stmt, parent_class: ast.ClassDef | None) -> None:
         if check_is_ignored_name(identifier):
             return
-            
+
         # Only apply parent class exemption for assignments within classes
         if (
             parent_class
@@ -100,7 +100,7 @@ class COP004NameLengthCheck(ast.NodeVisitor):
             and check_inherits_from_whitelisted_class(parent_class)
         ):
             return
-            
+
         if len(identifier) < MIN_NAME_LENGTH:
             # Determine the appropriate violation code based on context
             if isinstance(ast_node, ast.AnnAssign):
@@ -130,7 +130,7 @@ class COP004NameLengthCheck(ast.NodeVisitor):
             return
         if check_is_pytest_fixture(ast_node):
             return
-            
+
         if len(ast_node.name) < MIN_NAME_LENGTH:
             self.violations.append(
                 Violation(
@@ -148,7 +148,7 @@ class COP004NameLengthCheck(ast.NodeVisitor):
             self.validate_argument_name_length(argument)
         for argument in ast_node.args.kwonlyargs:
             self.validate_argument_name_length(argument)
-            
+
         if ast_node.args.vararg is not None:
             self.validate_argument_name_length(ast_node.args.vararg)
         if ast_node.args.kwarg is not None:
@@ -161,7 +161,7 @@ class COP004NameLengthCheck(ast.NodeVisitor):
             return
         if check_is_whitelisted_annotation(argument.annotation):
             return
-            
+
         if len(argument.arg) < MIN_NAME_LENGTH:
             self.violations.append(
                 Violation(
@@ -174,7 +174,7 @@ class COP004NameLengthCheck(ast.NodeVisitor):
     def validate_class_name_length(self, ast_node: ast.ClassDef) -> None:
         if check_is_ignored_name(ast_node.name):
             return
-            
+
         if len(ast_node.name) < MIN_NAME_LENGTH:
             self.violations.append(
                 Violation(

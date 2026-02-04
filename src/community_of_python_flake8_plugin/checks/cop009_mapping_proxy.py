@@ -19,7 +19,7 @@ def is_mapping_proxy_type(annotation: ast.expr | None) -> bool:
 
 @typing.final
 class COP009MappingProxyCheck(ast.NodeVisitor):
-    def __init__(self, tree: ast.AST) -> None:  # noqa: COP004G
+    def __init__(self, syntax_tree: ast.AST) -> None:  # noqa: ARG002
         self.violations: list[Violation] = []
 
     def visit_Module(self, ast_node: ast.Module) -> None:
@@ -36,7 +36,7 @@ class COP009MappingProxyCheck(ast.NodeVisitor):
         # Check for dictionary literals assigned to module-level variables
         assigned_value: ast.expr | None
         assignment_targets: list[ast.expr]
-        
+
         if isinstance(ast_node, ast.Assign):
             assigned_value = ast_node.value
             assignment_targets = ast_node.targets
