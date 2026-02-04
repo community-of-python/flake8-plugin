@@ -32,9 +32,6 @@ class CommunityOfPythonFlake8Plugin:
         checks_collection: typing.Final[list[PluginCheckProtocol]] = []
 
         for _, module_name, _ in pkgutil.iter_modules(checks_module.__path__):
-            if module_name == "__init__":
-                continue
-
             module_full_name = f"{checks_module.__name__}.{module_name}"  # noqa: COP007
             imported_module = importlib.import_module(module_full_name)
 

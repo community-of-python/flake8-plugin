@@ -82,9 +82,6 @@ class FunctionVerbCheck(ast.NodeVisitor):
         ):
             return
 
-        if len(ast_node.name) < 3:  # noqa: PLR2004  # Short names are likely acronyms or special cases
-            return
-
         self.violations.append(
             Violation(
                 line_number=ast_node.lineno,

@@ -4,9 +4,23 @@ import typing
 from importlib import util as importlib_util
 
 from community_of_python_flake8_plugin import constants
-from community_of_python_flake8_plugin.utils import check_module_has_all_declaration
 from community_of_python_flake8_plugin.violation_codes import ViolationCodes
 from community_of_python_flake8_plugin.violations import Violation
+
+
+def check_module_has_all_declaration(module_node: ast.Module) -> bool:
+    for statement in module_node.body:
+        if isinstance(statement, ast.Assign) and any(
+            isinstance(target, ast.Name) and target.id == "__all__" for target in statement.targets
+        ):
+            return True
+        if (
+            isinstance(statement, ast.AnnAssign)
+            and isinstance(statement.target, ast.Name)
+            and statement.target.id == "__all__"
+        ):
+            return True
+    return False
 
 
 def check_module_path_exists(module_name: str) -> bool:

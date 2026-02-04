@@ -3,7 +3,7 @@ import ast
 import typing
 
 from community_of_python_flake8_plugin.constants import SCALAR_ANNOTATIONS
-from community_of_python_flake8_plugin.utils import find_parent_class_definition, find_parent_function
+from community_of_python_flake8_plugin.utils import find_parent_class_definition
 from community_of_python_flake8_plugin.violation_codes import ViolationCodes
 from community_of_python_flake8_plugin.violations import Violation
 
@@ -36,9 +36,18 @@ def check_is_scalar_annotation(annotation_node: ast.AST) -> bool:
     return False
 
 
+def find_parent_function(syntax_tree: ast.AST, target_node: ast.AST) -> ast.FunctionDef | ast.AsyncFunctionDef | None:
+    for potential_parent in ast.walk(syntax_tree):
+        if isinstance(potential_parent, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            for child_node in ast.walk(potential_parent):  # noqa: COP007
+                if child_node is target_node:
+                    return potential_parent
+    return None
+
+
 @typing.final
 class ScalarAnnotationCheck(ast.NodeVisitor):
-    def __init__(self, tree: ast.AST) -> None: # noqa: COP004G
+    def __init__(self, tree: ast.AST) -> None:  # noqa: COP004G
         self.violations: list[Violation] = []
         self.syntax_tree: typing.Final[ast.AST] = tree
 
