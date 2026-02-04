@@ -47,6 +47,15 @@ def check_is_fixture_decorator(decorator: ast.expr) -> bool:
         return decorator.id == "fixture"
     if isinstance(decorator, ast.Attribute):
         return decorator.attr == "fixture" and isinstance(decorator.value, ast.Name) and decorator.value.id == "pytest"
+    # Handle cases where decorator might be a call like @pytest.fixture(name="events")
+    if isinstance(decorator, ast.Call) and isinstance(decorator.func, ast.Attribute):
+        return (
+            decorator.func.attr == "fixture"
+            and isinstance(decorator.func.value, ast.Name)
+            and decorator.func.value.id == "pytest"
+        )
+    if isinstance(decorator, ast.Call) and isinstance(decorator.func, ast.Name):
+        return decorator.func.id == "fixture"
     return False
 
 

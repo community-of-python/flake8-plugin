@@ -156,6 +156,16 @@ def test_type_annotation_validations(input_source: str, expected_output: list[st
             "from pytest import fixture\n@fixture\ndef some_fixture(arg: fixture): pass",
             [],
         ),
+        # No violation: pytest fixture with name parameter should be exempt from COP009
+        (
+            "import pytest\n@pytest.fixture(name='events')\ndef fixture_events() -> list[dict]:\n    return []",
+            [],
+        ),
+        # No violation: pytest fixture with name parameter should be exempt from COP009
+        (
+            "import pytest\n@pytest.fixture(name='events')\ndef fixture_events() -> list[dict]:\n    return []",
+            [],
+        ),
         # COP009: faker.Faker annotation doesn't exempt function naming rules
         (
             "import faker\ndef some_func(arg: faker.Faker): pass",
@@ -356,6 +366,25 @@ def test_module_level_validations(input_source: str, expected_output: list[str])
     ],
 )
 def test_dataclass_validations(input_source: str, expected_output: list[str]) -> None:
+    assert sorted(
+        [item[2].split(" ")[0] for item in CommunityOfPythonFlake8Plugin(ast.parse(input_source)).run()]  # noqa: COP011
+    ) == sorted(expected_output)
+
+
+@pytest.mark.parametrize(
+    ("input_source", "expected_output"),
+    [
+        # COP005: Module-level annotated assignment should be treated as variable, not attribute
+        ("v: int = 1", ["COP005", "COP003"]),
+        # COP005: Module-level Final assignment should be treated as variable, not attribute
+        ("c: typing.Final = CreditStatementClient()", ["COP005"]),
+        # COP004: Class-level annotated assignment should still be treated as attribute
+        ("class ExampleClass:\n    a: int = 1", ["COP012", "COP004"]),
+        # COP004: Class-level Final assignment should still be treated as attribute
+        ("class ExampleClass:\n    client: typing.Final = CreditStatementClient()", ["COP012", "COP004"]),
+    ],
+)
+def test_module_vs_class_level_assignments(input_source: str, expected_output: list[str]) -> None:
     assert sorted(
         [item[2].split(" ")[0] for item in CommunityOfPythonFlake8Plugin(ast.parse(input_source)).run()]  # noqa: COP011
     ) == sorted(expected_output)
