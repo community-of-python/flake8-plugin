@@ -28,7 +28,7 @@ def is_protocol_class(class_node: ast.ClassDef) -> bool:
 
 
 @typing.final
-class COP008FinalClassCheck(ast.NodeVisitor):
+class FinalClassCheck(ast.NodeVisitor):
     def __init__(self, syntax_tree: ast.AST) -> None:  # noqa: ARG002
         self.violations: list[Violation] = []
 
