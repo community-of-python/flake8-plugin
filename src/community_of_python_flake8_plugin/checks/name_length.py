@@ -91,16 +91,17 @@ class COP004NameLengthCheck(ast.NodeVisitor):
             return
 
         if len(identifier) < MIN_NAME_LENGTH:
+            # Determine if this is an attribute (inside a class) or variable (at module level)
+            is_attribute = parent_class is not None
+            
             self.violations.append(
                 Violation(
                     line_number=ast_node.lineno,
                     column_number=ast_node.col_offset,
                     violation_code=(
                         ViolationCodes.ATTRIBUTE_NAME_LENGTH
-                        if isinstance(ast_node, ast.AnnAssign)
+                        if is_attribute
                         else ViolationCodes.VARIABLE_NAME_LENGTH
-                        if isinstance(ast_node, ast.Assign)
-                        else ViolationCodes.ATTRIBUTE_NAME_LENGTH
                     ),
                 )
             )
