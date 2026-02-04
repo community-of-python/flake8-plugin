@@ -187,6 +187,24 @@ def test_type_annotation_validations(input_source: str, expected_output: list[st
             "from polyfactory.factories.pydantic_factory import ModelFactory\nclass MyFactory(ModelFactory):\n    def calculator(self): pass",
             ["COP012"],
         ),
+        # No violation: ModelFactory generic methods should be exempt from COP009
+        (
+            "from polyfactory.factories.pydantic_factory import ModelFactory\nimport some_module\n"
+            "class MyFactory(ModelFactory[some_module.SomeClass]):\n    def calculator(self): pass",
+            ["COP012"],
+        ),
+        # No violation: ModelFactory classmethod should be exempt from COP009
+        (
+            "from polyfactory.factories.pydantic_factory import ModelFactory\n"
+            "class MyFactory(ModelFactory):\n    @classmethod\n    def create(cls): pass",
+            ["COP012"],
+        ),
+        # No violation: ModelFactory generic classmethod should be exempt from COP009
+        (
+            "from polyfactory.factories.pydantic_factory import ModelFactory\nimport some_module\n"
+            "class MyFactory(ModelFactory[some_module.SomeClass]):\n    @classmethod\n    def create(cls): pass",
+            ["COP012"],
+        ),
         # No violation: cached_property imported directly should exempt function from COP009 (but triggers COP002 for import style)
         (
             "from functools import cached_property\nclass ExampleClass:\n    @cached_property\n    def calculator(self): pass",

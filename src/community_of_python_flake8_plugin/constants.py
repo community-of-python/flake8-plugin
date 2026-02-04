@@ -108,6 +108,7 @@ VERB_PREFIXES: typing.Final = {
     "ensure",
     "submit",
     "clear",
+    "undo",
 }
 
 SCALAR_ANNOTATIONS: typing.Final = {"int", "str", "float", "bool", "bytes", "complex"}
@@ -116,5 +117,5 @@ MAPPING_PROXY_TYPES: typing.Final = {"MappingProxyType"}
 
 ALLOWED_STDLIB_FROM_IMPORTS: typing.Final = {"collections.abc"}
 
-FINAL_CLASS_EXCLUDED_BASES: typing.Final = {"BaseModel", "RootModel", "ModelFactory"}
+FINAL_CLASS_EXCLUDED_BASES: typing.Final = {"BaseModel", "RootModel", "ModelFactory", "SQLAlchemyFactory"}
 MAX_IMPORT_NAMES: typing.Final = 2

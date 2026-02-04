@@ -17,6 +17,12 @@ def check_inherits_from_bases(class_definition: ast.ClassDef, base_classes: set[
             return True
         if isinstance(base_class, ast.Attribute) and base_class.attr in base_classes:
             return True
+        # Handle generic types like ModelFactory[SomeType]
+        if isinstance(base_class, ast.Subscript):
+            if isinstance(base_class.value, ast.Name) and base_class.value.id in base_classes:
+                return True
+            if isinstance(base_class.value, ast.Attribute) and base_class.value.attr in base_classes:
+                return True
     return False
 
 

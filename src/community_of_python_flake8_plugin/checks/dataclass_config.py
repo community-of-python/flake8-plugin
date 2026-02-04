@@ -54,9 +54,9 @@ def is_pydantic_model(class_node: ast.ClassDef) -> bool:
 def is_model_factory(class_node: ast.ClassDef) -> bool:
     """Check if class inherits from ModelFactory."""
     for base_class in class_node.bases:
-        if isinstance(base_class, ast.Name) and base_class.id == "ModelFactory":
+        if isinstance(base_class, ast.Name) and base_class.id in {"ModelFactory", "SQLAlchemyFactory"}:
             return True
-        if isinstance(base_class, ast.Attribute) and base_class.attr == "ModelFactory":
+        if isinstance(base_class, ast.Attribute) and base_class.attr in {"ModelFactory", "SQLAlchemyFactory"}:
             return True
     return False
 
