@@ -16,7 +16,7 @@ class ViolationCodes:
     MODULE_IMPORT_MANY_NAMES = ViolationCodeItem(
         code="COP001", description="Use module import when importing more than two names"
     )
-    STDLIB_IMPORT = ViolationCodeItem(code="COP002", description="Import stdlib modules as whole modules")
+    MODULE_IMPORT_STDLIB = ViolationCodeItem(code="COP002", description="Import stdlib modules as whole modules")
 
     # Type annotation violations
     SCALAR_ANNOTATION = ViolationCodeItem(

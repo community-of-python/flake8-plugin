@@ -5,8 +5,8 @@ import typing
 from importlib import util as importlib_util
 
 from community_of_python_flake8_plugin.constants import ALLOWED_STDLIB_FROM_IMPORTS
-from community_of_python_flake8_plugin.violations import Violation
 from community_of_python_flake8_plugin.violation_codes import ViolationCodes
+from community_of_python_flake8_plugin.violations import Violation
 
 
 def check_is_stdlib_module(module_name: str) -> bool:
@@ -44,6 +44,6 @@ class COP002StdlibImportCheck(ast.NodeVisitor):
                 Violation(
                     line_number=ast_node.lineno,
                     column_number=ast_node.col_offset,
-                    violation_code=ViolationCodes.STDLIB_IMPORT,
+                    violation_code=ViolationCodes.MODULE_IMPORT_STDLIB,
                 )
             )
