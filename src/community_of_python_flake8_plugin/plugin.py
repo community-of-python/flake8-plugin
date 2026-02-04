@@ -6,8 +6,13 @@ if typing.TYPE_CHECKING:
     import ast
     from collections.abc import Iterable
 
+    from community_of_python_flake8_plugin.violations import Violation
 
-from community_of_python_flake8_plugin.checks import execute_all_validations
+
+class PluginCheck(typing.Protocol):
+    violations: list[Violation]
+
+    def visit(self, node: ast.AST) -> None: ...
 
 
 @typing.final
@@ -19,7 +24,8 @@ class CommunityOfPythonFlake8Plugin:
         self.ast_tree = tree
 
     def run(self) -> Iterable[tuple[int, int, str, type[object]]]:  # noqa: COP004
-        violations_list: typing.Final = execute_all_validations(self.ast_tree)
-        for violation in violations_list:
-            violation_message = f"{violation.violation_code.code} {violation.violation_code.description}"
-            yield violation.line_number, violation.column_number, violation_message, type(self)
+        discovered_checks: list[PluginCheck] = ...
+        for one_check in discovered_checks:
+            for one_violation in one_check.violations:
+                violation_message = f"{one_violation.violation_code.code} {one_violation.violation_code.description}"
+                yield one_violation.line_number, one_violation.column_number, violation_message, type(self)
