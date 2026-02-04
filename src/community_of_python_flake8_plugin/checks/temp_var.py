@@ -85,7 +85,7 @@ class TempVarCheck(ast.NodeVisitor):
                     Violation(
                         line_number=first_usage.lineno,
                         column_number=first_usage.col_offset,
-                        violation_code=ViolationCodes.TEMPORARY_VARIABLE,
+                        violation_code=ViolationCodes.TEMP_VAR,
                     )
                 )
                 found_temporary_variable = True
