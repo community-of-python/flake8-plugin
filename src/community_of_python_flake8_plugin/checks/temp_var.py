@@ -3,8 +3,9 @@ import ast
 import typing
 from collections import defaultdict
 
-from community_of_python_flake8_plugin.violations import Violation
 from community_of_python_flake8_plugin.violation_codes import ViolationCodes
+from community_of_python_flake8_plugin.violations import Violation
+
 
 def collect_variable_usage(function_node: ast.AST) -> dict[str, list[ast.Name]]:
     variable_usage: typing.Final[defaultdict[str, list[ast.Name]]] = defaultdict(list)

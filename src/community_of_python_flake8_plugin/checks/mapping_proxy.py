@@ -3,9 +3,10 @@ import ast
 import typing
 
 from community_of_python_flake8_plugin.constants import MAPPING_PROXY_TYPES
+from community_of_python_flake8_plugin.violation_codes import ViolationCodes
 from community_of_python_flake8_plugin.violations import Violation
 
-from community_of_python_flake8_plugin.violation_codes import ViolationCodes
+
 def is_mapping_proxy_type(annotation: ast.expr | None) -> bool:
     if annotation is None:
         return False

@@ -3,9 +3,10 @@ import ast
 import typing
 
 from community_of_python_flake8_plugin.constants import VERB_PREFIXES
+from community_of_python_flake8_plugin.violation_codes import ViolationCodes
 from community_of_python_flake8_plugin.violations import Violation
 
-from community_of_python_flake8_plugin.violation_codes import ViolationCodes
+
 def check_is_verb_name(identifier: str) -> bool:
     return any(identifier == verb or identifier.startswith(f"{verb}_") for verb in VERB_PREFIXES)
 

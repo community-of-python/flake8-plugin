@@ -4,8 +4,9 @@ import typing
 
 from community_of_python_flake8_plugin.constants import SCALAR_ANNOTATIONS
 from community_of_python_flake8_plugin.utils import find_parent_class_definition, find_parent_function
-from community_of_python_flake8_plugin.violations import Violation
 from community_of_python_flake8_plugin.violation_codes import ViolationCodes
+from community_of_python_flake8_plugin.violations import Violation
+
 
 def check_is_literal_value(node_value: ast.AST) -> bool:
     if isinstance(node_value, ast.Constant):
@@ -37,7 +38,7 @@ def check_is_scalar_annotation(annotation_node: ast.AST) -> bool:
 
 @typing.final
 class ScalarAnnotationCheck(ast.NodeVisitor):
-    def __init__(self, tree: ast.AST) -> None:
+    def __init__(self, tree: ast.AST) -> None: # noqa: COP004G
         self.violations: list[Violation] = []
         self.syntax_tree: typing.Final[ast.AST] = tree
 

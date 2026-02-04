@@ -4,8 +4,9 @@ import typing
 
 from community_of_python_flake8_plugin.constants import FINAL_CLASS_EXCLUDED_BASES, MIN_NAME_LENGTH
 from community_of_python_flake8_plugin.utils import find_parent_class_definition
-from community_of_python_flake8_plugin.violations import Violation
 from community_of_python_flake8_plugin.violation_codes import ViolationCodes
+from community_of_python_flake8_plugin.violations import Violation
+
 
 def check_is_ignored_name(identifier: str) -> bool:
     if identifier == "_":
