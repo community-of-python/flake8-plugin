@@ -4,7 +4,7 @@ import typing
 
 
 if typing.TYPE_CHECKING:
-    from .violation_codes import ViolationCode
+    from .violation_codes import ViolationCodeItem
 
 
 @typing.final
@@ -12,4 +12,4 @@ if typing.TYPE_CHECKING:
 class Violation:
     line_number: int
     column_number: int
-    violation_code: ViolationCode
+    violation_code: ViolationCodeItem
