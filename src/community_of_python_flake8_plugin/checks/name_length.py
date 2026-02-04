@@ -61,26 +61,24 @@ class COP004NameLengthCheck(ast.NodeVisitor):
 
     def visit_AnnAssign(self, ast_node: ast.AnnAssign) -> None:
         if isinstance(ast_node.target, ast.Name):
-            parent_class: typing.Final = find_parent_class_definition(self.syntax_tree, ast_node)  # noqa: COP011
-            self.validate_name_length(ast_node.target.id, ast_node, parent_class)
+            self.validate_name_length(
+                ast_node.target.id, ast_node, find_parent_class_definition(self.syntax_tree, ast_node)
+            )
         self.generic_visit(ast_node)
 
     def visit_Assign(self, ast_node: ast.Assign) -> None:
         for target in ast_node.targets:
             if isinstance(target, ast.Name):
-                parent_class = find_parent_class_definition(self.syntax_tree, ast_node)  # noqa: COP011
-                self.validate_name_length(target.id, ast_node, parent_class)
+                self.validate_name_length(target.id, ast_node, find_parent_class_definition(self.syntax_tree, ast_node))
         self.generic_visit(ast_node)
 
     def visit_FunctionDef(self, ast_node: ast.FunctionDef) -> None:
-        parent_class: typing.Final = find_parent_class_definition(self.syntax_tree, ast_node)  # noqa: COP011
-        self.validate_function_name(ast_node, parent_class)
+        self.validate_function_name(ast_node, find_parent_class_definition(self.syntax_tree, ast_node))
         self.validate_function_args(ast_node)
         self.generic_visit(ast_node)
 
     def visit_AsyncFunctionDef(self, ast_node: ast.AsyncFunctionDef) -> None:
-        parent_class: typing.Final = find_parent_class_definition(self.syntax_tree, ast_node)  # noqa: COP011
-        self.validate_function_name(ast_node, parent_class)
+        self.validate_function_name(ast_node, find_parent_class_definition(self.syntax_tree, ast_node))
         self.validate_function_args(ast_node)
         self.generic_visit(ast_node)
 
@@ -102,20 +100,17 @@ class COP004NameLengthCheck(ast.NodeVisitor):
             return
 
         if len(identifier) < MIN_NAME_LENGTH:
-            # Determine the appropriate violation code based on context
-            if isinstance(ast_node, ast.AnnAssign):
-                name_violation_code = ViolationCodes.ATTRIBUTE_NAME_LENGTH
-            elif isinstance(ast_node, ast.Assign):
-                name_violation_code = ViolationCodes.VARIABLE_NAME_LENGTH
-            else:
-                # This shouldn't happen with current AST node types, but fall back to generic if needed
-                name_violation_code = ViolationCodes.ATTRIBUTE_NAME_LENGTH
-
             self.violations.append(
                 Violation(
                     line_number=ast_node.lineno,
                     column_number=ast_node.col_offset,
-                    violation_code=name_violation_code,
+                    violation_code=(
+                        ViolationCodes.ATTRIBUTE_NAME_LENGTH
+                        if isinstance(ast_node, ast.AnnAssign)
+                        else ViolationCodes.VARIABLE_NAME_LENGTH
+                        if isinstance(ast_node, ast.Assign)
+                        else ViolationCodes.ATTRIBUTE_NAME_LENGTH
+                    ),
                 )
             )
 
