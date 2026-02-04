@@ -1,5 +1,6 @@
 from __future__ import annotations
 import ast
+import importlib.machinery
 import typing
 from importlib import util as importlib_util
 
@@ -25,8 +26,22 @@ def check_module_has_all_declaration(module_node: ast.Module) -> bool:
 
 def check_module_path_exists(module_name: str) -> bool:
     try:
-        return importlib_util.find_spec(module_name) is not None
-    except (ModuleNotFoundError, ValueError):
+        if "." not in module_name:
+            return importlib_util.find_spec(module_name) is not None
+
+        parent, _, _child = module_name.rpartition(".")
+        parent_spec = importlib_util.find_spec(parent)  # does not execute parent
+        if parent_spec is None:
+            return False
+
+        # Parent must be a package (have places to search for submodules)
+        locations = parent_spec.submodule_search_locations
+        if locations is None:
+            return False
+
+        # Find child without importing parent
+        return importlib.machinery.PathFinder.find_spec(module_name, list(locations)) is not None
+    except ModuleNotFoundError:
         return False
 
 
