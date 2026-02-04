@@ -21,7 +21,7 @@ def collect_variable_usage(function_node: ast.AST) -> dict[str, list[ast.Name]]:
 
 
 @typing.final
-class COP007TempVarCheck(ast.NodeVisitor):
+class TempVarCheck(ast.NodeVisitor):
     def __init__(self, syntax_tree: ast.AST) -> None:  # noqa: ARG002
         self.violations: list[Violation] = []
 
