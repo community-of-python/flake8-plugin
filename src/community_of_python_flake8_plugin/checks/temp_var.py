@@ -18,6 +18,14 @@ def collect_variable_usage_and_stores(function_node: ast.AST) -> tuple[dict[str,
             for elt in expression.elts:
                 yield from extract_names(elt)
 
+    def is_tuple_unpacking(assign_node: ast.Assign) -> bool:
+        """Check if this is a tuple unpacking assignment."""
+        if not assign_node.targets:
+            return False
+
+        target = assign_node.targets[0]
+        return isinstance(target, ast.Tuple)
+
     @typing.final
     class UsageCollector(ast.NodeVisitor):
         def visit_Name(self, name_node: ast.Name) -> None:
@@ -25,8 +33,10 @@ def collect_variable_usage_and_stores(function_node: ast.AST) -> tuple[dict[str,
             self.generic_visit(name_node)
 
         def visit_Assign(self, assign_node: ast.Assign) -> None:
-            for target in assign_node.targets:
-                assigned_variable_names.update(extract_names(target))
+            # Skip collecting variables from tuple unpacking assignments
+            if not is_tuple_unpacking(assign_node):
+                for target in assign_node.targets:
+                    assigned_variable_names.update(extract_names(target))
             self.generic_visit(assign_node)
 
         def visit_AugAssign(self, aug_assign_node: ast.AugAssign) -> None:

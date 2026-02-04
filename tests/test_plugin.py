@@ -282,6 +282,8 @@ def test_naming_validations(input_source: str, expected_output: list[str]) -> No
         ),
         # No violation: Variable used in loop
         ("def fetch_item():\n    for _, one_value in values: print(f'{one_value}')", []),
+        # No violation: Tuple unpacking with underscore variables
+        ("def parse_module():\n    parent, _, _child = module_name.rpartition('.')\n    return parent", []),
     ],
 )
 def test_variable_usage_validations(input_source: str, expected_output: list[str]) -> None:
