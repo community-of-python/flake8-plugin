@@ -1,6 +1,5 @@
 from __future__ import annotations
 import ast
-import typing
 
 import pytest
 
@@ -60,10 +59,9 @@ from community_of_python_flake8_plugin.plugin import CommunityOfPythonFlake8Plug
     ],
 )
 def test_import_validations(input_source: str, expected_output: list[str]) -> None:
-    ast_node: typing.Final = ast.parse(input_source)  # noqa: COP007
-    messages: typing.Final = [item[2] for item in CommunityOfPythonFlake8Plugin(ast_node).run()]
-    extracted_codes: typing.Final = [message.split(" ")[0] for message in messages]
-    assert sorted(extracted_codes) == sorted(expected_output)
+    assert sorted(
+        [item[2].split(" ")[0] for item in CommunityOfPythonFlake8Plugin(ast.parse(input_source)).run()]  # noqa: COP007
+    ) == sorted(expected_output)
 
 
 @pytest.mark.parametrize(
@@ -82,10 +80,9 @@ def test_import_validations(input_source: str, expected_output: list[str]) -> No
     ],
 )
 def test_type_annotation_validations(input_source: str, expected_output: list[str]) -> None:
-    ast_node: typing.Final = ast.parse(input_source)  # noqa: COP007
-    messages: typing.Final = [item[2] for item in CommunityOfPythonFlake8Plugin(ast_node).run()]
-    extracted_codes: typing.Final = [message.split(" ")[0] for message in messages]
-    assert sorted(extracted_codes) == sorted(expected_output)
+    assert sorted(
+        [item[2].split(" ")[0] for item in CommunityOfPythonFlake8Plugin(ast.parse(input_source)).run()]  # noqa: COP007
+    ) == sorted(expected_output)
 
 
 @pytest.mark.parametrize(
@@ -184,10 +181,9 @@ def test_type_annotation_validations(input_source: str, expected_output: list[st
     ],
 )
 def test_naming_validations(input_source: str, expected_output: list[str]) -> None:
-    ast_node: typing.Final = ast.parse(input_source)  # noqa: COP007
-    messages: typing.Final = [item[2] for item in CommunityOfPythonFlake8Plugin(ast_node).run()]
-    extracted_codes: typing.Final = [message.split(" ")[0] for message in messages]
-    assert sorted(extracted_codes) == sorted(expected_output)
+    assert sorted(
+        [item[2].split(" ")[0] for item in CommunityOfPythonFlake8Plugin(ast.parse(input_source)).run()]  # noqa: COP007
+    ) == sorted(expected_output)
 
 
 @pytest.mark.parametrize(
@@ -210,10 +206,9 @@ def test_naming_validations(input_source: str, expected_output: list[str]) -> No
     ],
 )
 def test_variable_usage_validations(input_source: str, expected_output: list[str]) -> None:
-    ast_node: typing.Final = ast.parse(input_source)  # noqa: COP007
-    messages: typing.Final = [item[2] for item in CommunityOfPythonFlake8Plugin(ast_node).run()]
-    extracted_codes: typing.Final = [message.split(" ")[0] for message in messages]
-    assert sorted(extracted_codes) == sorted(expected_output)
+    assert sorted(
+        [item[2].split(" ")[0] for item in CommunityOfPythonFlake8Plugin(ast.parse(input_source)).run()]  # noqa: COP007
+    ) == sorted(expected_output)
 
 
 @pytest.mark.parametrize(
@@ -256,10 +251,9 @@ def test_variable_usage_validations(input_source: str, expected_output: list[str
     ],
 )
 def test_class_validations(input_source: str, expected_output: list[str]) -> None:
-    ast_node: typing.Final = ast.parse(input_source)  # noqa: COP007
-    messages: typing.Final = [item[2] for item in CommunityOfPythonFlake8Plugin(ast_node).run()]
-    extracted_codes: typing.Final = [message.split(" ")[0] for message in messages]
-    assert sorted(extracted_codes) == sorted(expected_output)
+    assert sorted(
+        [item[2].split(" ")[0] for item in CommunityOfPythonFlake8Plugin(ast.parse(input_source)).run()]  # noqa: COP007
+    ) == sorted(expected_output)
 
 
 @pytest.mark.parametrize(
@@ -274,19 +268,9 @@ def test_class_validations(input_source: str, expected_output: list[str]) -> Non
     ],
 )
 def test_module_level_validations(input_source: str, expected_output: list[str]) -> None:
-    ast_node: typing.Final = ast.parse(input_source)  # noqa: COP007
-    messages: typing.Final = [item[2] for item in CommunityOfPythonFlake8Plugin(ast_node).run()]
-    extracted_codes: typing.Final = [message.split(" ")[0] for message in messages]
-    assert sorted(extracted_codes) == sorted(expected_output)
-
-
-def test_non_function_nodes() -> None:
-    """Test that non-function AST nodes don't cause issues."""
-    # Test with a class node (not a function) - should not crash
-    example_code: typing.Final = "class Example:\n    pass"  # noqa: COP007
-    ast_node: typing.Final = ast.parse(example_code)  # noqa: COP007
-    [item[2] for item in CommunityOfPythonFlake8Plugin(ast_node).run()]
-    # Just ensure it doesn't crash - no specific assertions needed
+    assert sorted(
+        [item[2].split(" ")[0] for item in CommunityOfPythonFlake8Plugin(ast.parse(input_source)).run()]  # noqa: COP007
+    ) == sorted(expected_output)
 
 
 @pytest.mark.parametrize(
@@ -357,10 +341,9 @@ def test_non_function_nodes() -> None:
     ],
 )
 def test_dataclass_validations(input_source: str, expected_output: list[str]) -> None:
-    ast_node: typing.Final = ast.parse(input_source)  # noqa: COP007
-    messages: typing.Final = [item[2] for item in CommunityOfPythonFlake8Plugin(ast_node).run()]
-    extracted_codes: typing.Final = [message.split(" ")[0] for message in messages]
-    assert sorted(extracted_codes) == sorted(expected_output)
+    assert sorted(
+        [item[2].split(" ")[0] for item in CommunityOfPythonFlake8Plugin(ast.parse(input_source)).run()]  # noqa: COP007
+    ) == sorted(expected_output)
 
 
 @pytest.mark.parametrize(
@@ -374,7 +357,6 @@ def test_dataclass_validations(input_source: str, expected_output: list[str]) ->
     ],
 )
 def test_combined_validations(input_source: str, expected_output: list[str]) -> None:
-    ast_node: typing.Final = ast.parse(input_source)  # noqa: COP007
-    messages: typing.Final = [item[2] for item in CommunityOfPythonFlake8Plugin(ast_node).run()]
-    extracted_codes: typing.Final = [message.split(" ")[0] for message in messages]
-    assert sorted(extracted_codes) == sorted(expected_output)
+    assert sorted(
+        [item[2].split(" ")[0] for item in CommunityOfPythonFlake8Plugin(ast.parse(input_source)).run()]  # noqa: COP007
+    ) == sorted(expected_output)
