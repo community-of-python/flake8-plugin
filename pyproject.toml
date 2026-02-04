@@ -11,7 +11,7 @@ dependencies = ["flake8"]
 COP = "community_of_python_flake8_plugin.plugin:CommunityOfPythonFlake8Plugin"
 
 [tool.pytest.ini_options]
-addopts = "-v"
+addopts = "--cov"
 
 [dependency-groups]
 dev = ["mypy", "ruff", "auto-typing-final", "pytest", "pytest-cov"]
