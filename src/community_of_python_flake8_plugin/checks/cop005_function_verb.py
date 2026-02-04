@@ -59,7 +59,7 @@ def retrieve_parent_class(syntax_tree: ast.AST, ast_node: ast.AST) -> ast.ClassD
 
 
 @typing.final
-class COP005Check(ast.NodeVisitor):
+class COP005FunctionVerbCheck(ast.NodeVisitor):
     def __init__(self, syntax_tree: ast.AST) -> None:
         self.syntax_tree = syntax_tree
         self.violations: list[Violation] = []

@@ -56,7 +56,7 @@ def check_dataclass_has_required_args(decorator: ast.expr, *, require_slots: boo
 
 
 @typing.final
-class COP010Check(ast.NodeVisitor):
+class COP010DataclassConfigCheck(ast.NodeVisitor):
     def __init__(self) -> None:
         self.violations: list[Violation] = []
 

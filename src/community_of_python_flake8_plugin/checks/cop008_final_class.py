@@ -17,7 +17,7 @@ def contains_final_decorator(ast_node: ast.ClassDef) -> bool:
 
 
 @typing.final
-class COP008Check(ast.NodeVisitor):
+class COP008FinalClassCheck(ast.NodeVisitor):
     def __init__(self) -> None:
         self.violations: list[Violation] = []
 

@@ -46,7 +46,7 @@ def find_parent_function(syntax_tree: ast.AST, ast_node: ast.AST) -> ast.Functio
 
 
 @typing.final
-class COP003Check(ast.NodeVisitor):
+class COP003ScalarAnnotationCheck(ast.NodeVisitor):
     def __init__(self, syntax_tree: ast.AST) -> None:
         self.syntax_tree = syntax_tree
         self.violations: list[Violation] = []

@@ -18,7 +18,7 @@ MAX_IMPORT_NAMES: typing.Final = 2
 
 
 @typing.final
-class COP001Check(ast.NodeVisitor):
+class COP001ModuleImportCheck(ast.NodeVisitor):
     def __init__(self, contains_all_declaration: bool) -> None:
         self.contains_all_declaration = contains_all_declaration
         self.violations: list[Violation] = []

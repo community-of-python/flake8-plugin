@@ -54,7 +54,7 @@ def check_inherits_from_whitelisted_class(class_node: ast.ClassDef) -> bool:
 
 
 @typing.final
-class COP004Check(ast.NodeVisitor):
+class COP004NameLengthCheck(ast.NodeVisitor):
     def __init__(self, syntax_tree: ast.AST) -> None:
         self.syntax_tree = syntax_tree
         self.violations: list[Violation] = []

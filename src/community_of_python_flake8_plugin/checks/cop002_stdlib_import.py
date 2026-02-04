@@ -21,7 +21,7 @@ def check_is_stdlib_package(module_name: str) -> bool:
 
 
 @typing.final
-class COP002Check(ast.NodeVisitor):
+class COP002StdlibImportCheck(ast.NodeVisitor):
     def __init__(self) -> None:
         self.violations: list[Violation] = []
 

@@ -39,7 +39,7 @@ def check_is_mapping_proxy_call(value: ast.AST | None) -> bool:
 
 
 @typing.final
-class COP009Check(ast.NodeVisitor):
+class COP009MappingProxyCheck(ast.NodeVisitor):
     def __init__(self) -> None:
         self.violations: list[Violation] = []
 

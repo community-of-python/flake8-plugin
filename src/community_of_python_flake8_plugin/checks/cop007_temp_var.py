@@ -27,7 +27,7 @@ def collect_load_counts(ast_node: ast.AST) -> dict[str, int]:
 
 
 @typing.final
-class COP007Check(ast.NodeVisitor):
+class COP007TempVarCheck(ast.NodeVisitor):
     def __init__(self) -> None:
         self.violations: list[Violation] = []
 
