@@ -1,5 +1,7 @@
 from __future__ import annotations
 import importlib
+import importlib.metadata
+import pathlib
 import pkgutil
 import typing
 
@@ -22,8 +24,8 @@ class PluginCheckProtocol(typing.Protocol):
 
 @typing.final
 class CommunityOfPythonFlake8Plugin:
-    name: typing.Final[str] = "community-of-python-flake8-plugin"  # noqa: COP004
-    version: typing.Final[str] = "0.1.27"  # noqa: COP004
+    name: typing.Final[str] = str(pathlib.Path(__file__).parent.name)  # noqa: COP004
+    version: typing.Final[str] = importlib.metadata.version(name)  # noqa: COP004
 
     def __init__(self, tree: ast.AST) -> None:  # noqa: COP006
         self.ast_syntax_tree: typing.Final[ast.AST] = tree
