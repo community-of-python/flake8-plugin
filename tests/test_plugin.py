@@ -47,7 +47,10 @@ from community_of_python_flake8_plugin.plugin import CommunityOfPythonFlake8Plug
 )
 def test_import_stdlib_validations(input_source: str, expected_output: list[str]) -> None:
     assert sorted(
-        [item[2].split(" ")[0] for item in CommunityOfPythonFlake8Plugin(ast.parse(input_source)).run()]  # noqa: COP011
+        [
+            violation_item[2].split(" ")[0]
+            for violation_item in CommunityOfPythonFlake8Plugin(ast.parse(input_source)).run()
+        ]  # noqa: COP011
     ) == sorted(expected_output)
 
 
@@ -72,7 +75,10 @@ def test_import_stdlib_validations(input_source: str, expected_output: list[str]
 )
 def test_import_many_names_validations(input_source: str, expected_output: list[str]) -> None:
     assert sorted(
-        [item[2].split(" ")[0] for item in CommunityOfPythonFlake8Plugin(ast.parse(input_source)).run()]  # noqa: COP011
+        [
+            violation_item[2].split(" ")[0]
+            for violation_item in CommunityOfPythonFlake8Plugin(ast.parse(input_source)).run()
+        ]  # noqa: COP011
     ) == sorted(expected_output)
 
 
@@ -93,7 +99,10 @@ def test_import_many_names_validations(input_source: str, expected_output: list[
 )
 def test_type_annotation_validations(input_source: str, expected_output: list[str]) -> None:
     assert sorted(
-        [item[2].split(" ")[0] for item in CommunityOfPythonFlake8Plugin(ast.parse(input_source)).run()]  # noqa: COP011
+        [
+            violation_item[2].split(" ")[0]
+            for violation_item in CommunityOfPythonFlake8Plugin(ast.parse(input_source)).run()
+        ]  # noqa: COP011
     ) == sorted(expected_output)
 
 
@@ -257,7 +266,10 @@ def test_type_annotation_validations(input_source: str, expected_output: list[st
 )
 def test_naming_validations(input_source: str, expected_output: list[str]) -> None:
     assert sorted(
-        [item[2].split(" ")[0] for item in CommunityOfPythonFlake8Plugin(ast.parse(input_source)).run()]  # noqa: COP011
+        [
+            violation_item[2].split(" ")[0]
+            for violation_item in CommunityOfPythonFlake8Plugin(ast.parse(input_source)).run()
+        ]  # noqa: COP011
     ) == sorted(expected_output)
 
 
@@ -288,7 +300,10 @@ def test_naming_validations(input_source: str, expected_output: list[str]) -> No
 )
 def test_variable_usage_validations(input_source: str, expected_output: list[str]) -> None:
     assert sorted(
-        [item[2].split(" ")[0] for item in CommunityOfPythonFlake8Plugin(ast.parse(input_source)).run()]  # noqa: COP011
+        [
+            violation_item[2].split(" ")[0]
+            for violation_item in CommunityOfPythonFlake8Plugin(ast.parse(input_source)).run()
+        ]  # noqa: COP011
     ) == sorted(expected_output)
 
 
@@ -333,7 +348,10 @@ def test_variable_usage_validations(input_source: str, expected_output: list[str
 )
 def test_class_validations(input_source: str, expected_output: list[str]) -> None:
     assert sorted(
-        [item[2].split(" ")[0] for item in CommunityOfPythonFlake8Plugin(ast.parse(input_source)).run()]  # noqa: COP011
+        [
+            violation_item[2].split(" ")[0]
+            for violation_item in CommunityOfPythonFlake8Plugin(ast.parse(input_source)).run()
+        ]  # noqa: COP011
     ) == sorted(expected_output)
 
 
@@ -367,11 +385,14 @@ def test_class_validations(input_source: str, expected_output: list[str]) -> Non
 )
 def test_module_level_validations(input_source: str, expected_output: list[str]) -> None:
     assert [
-        v
-        for v in sorted(
-            [item[2].split(" ")[0] for item in CommunityOfPythonFlake8Plugin(ast.parse(input_source)).run()]
+        cop013_violation
+        for cop013_violation in sorted(
+            [
+                violation_item[2].split(" ")[0]
+                for violation_item in CommunityOfPythonFlake8Plugin(ast.parse(input_source)).run()
+            ]
         )
-        if v == "COP013"
+        if cop013_violation == "COP013"
     ] == expected_output
 
 
@@ -444,7 +465,10 @@ def test_module_level_validations(input_source: str, expected_output: list[str])
 )
 def test_dataclass_validations(input_source: str, expected_output: list[str]) -> None:
     assert sorted(
-        [item[2].split(" ")[0] for item in CommunityOfPythonFlake8Plugin(ast.parse(input_source)).run()]  # noqa: COP011
+        [
+            violation_item[2].split(" ")[0]
+            for violation_item in CommunityOfPythonFlake8Plugin(ast.parse(input_source)).run()
+        ]  # noqa: COP011
     ) == sorted(expected_output)
 
 
@@ -483,7 +507,10 @@ def test_dataclass_validations(input_source: str, expected_output: list[str]) ->
 )
 def test_module_vs_class_level_assignments(input_source: str, expected_output: list[str]) -> None:
     assert sorted(
-        [item[2].split(" ")[0] for item in CommunityOfPythonFlake8Plugin(ast.parse(input_source)).run()]  # noqa: COP011
+        [
+            violation_item[2].split(" ")[0]
+            for violation_item in CommunityOfPythonFlake8Plugin(ast.parse(input_source)).run()
+        ]  # noqa: COP011
     ) == sorted(expected_output)
 
 
@@ -499,5 +526,8 @@ def test_module_vs_class_level_assignments(input_source: str, expected_output: l
 )
 def test_combined_validations(input_source: str, expected_output: list[str]) -> None:
     assert sorted(
-        [item[2].split(" ")[0] for item in CommunityOfPythonFlake8Plugin(ast.parse(input_source)).run()]  # noqa: COP011
+        [
+            violation_item[2].split(" ")[0]
+            for violation_item in CommunityOfPythonFlake8Plugin(ast.parse(input_source)).run()
+        ]  # noqa: COP011
     ) == sorted(expected_output)

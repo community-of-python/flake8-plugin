@@ -19,7 +19,8 @@ from community_of_python_flake8_plugin.violations import Violation
 def check_module_has_all_declaration(module_node: ast.Module) -> bool:
     for statement in module_node.body:
         if isinstance(statement, ast.Assign) and any(
-            isinstance(target, ast.Name) and target.id == "__all__" for target in statement.targets
+            isinstance(target_element, ast.Name) and target_element.id == "__all__"
+            for target_element in statement.targets
         ):
             return True
         if (
@@ -76,9 +77,9 @@ class ModuleImportManyNamesCheck(ast.NodeVisitor):
             return
 
         if not any(
-            check_module_path_exists(f"{module_name}.{alias.name}")
-            for alias in ast_node.names
-            if isinstance(alias, ast.alias) and module_name is not None
+            check_module_path_exists(f"{module_name}.{alias_element.name}")
+            for alias_element in ast_node.names
+            if isinstance(alias_element, ast.alias) and module_name is not None
         ):
             self.violations.append(
                 Violation(

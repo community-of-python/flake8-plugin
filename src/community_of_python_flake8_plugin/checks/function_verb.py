@@ -17,7 +17,7 @@ def check_is_ignored_name(identifier: str) -> bool:
 
 
 def check_is_verb_name(identifier: str) -> bool:
-    return any(identifier == verb or identifier.startswith(f"{verb}_") for verb in VERB_PREFIXES)
+    return any(identifier == verb_name or identifier.startswith(f"{verb_name}_") for verb_name in VERB_PREFIXES)
 
 
 def check_is_property(function_node: ast.AST) -> bool:

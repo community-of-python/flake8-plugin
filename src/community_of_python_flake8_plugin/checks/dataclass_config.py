@@ -24,7 +24,11 @@ def has_required_dataclass_params(decorator: ast.expr) -> bool:
     if not isinstance(decorator, ast.Call):
         return False
 
-    keywords: typing.Final = {kw.arg: kw.value for kw in decorator.keywords if isinstance(kw.value, ast.Constant)}
+    keywords: typing.Final = {
+        keyword_item.arg: keyword_item.value
+        for keyword_item in decorator.keywords
+        if isinstance(keyword_item.value, ast.Constant)
+    }
     kw_only_param: typing.Final = keywords.get("kw_only")
     slots_param: typing.Final = keywords.get("slots")
     frozen_param: typing.Final = keywords.get("frozen")

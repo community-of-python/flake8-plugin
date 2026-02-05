@@ -73,8 +73,8 @@ class TempVarCheck(ast.NodeVisitor):
                 continue
 
             if (
-                len([usage for usage in usages if isinstance(usage.ctx, ast.Store)]) == 1
-                and len([usage for usage in usages if isinstance(usage.ctx, ast.Load)]) == 1
+                len([usage_element for usage_element in usages if isinstance(usage_element.ctx, ast.Store)]) == 1
+                and len([usage_element for usage_element in usages if isinstance(usage_element.ctx, ast.Load)]) == 1
                 and variable_name in usage_and_stores[1]
                 and not found_temporary_variable
             ):
