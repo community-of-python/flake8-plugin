@@ -2,6 +2,8 @@ from __future__ import annotations
 import ast
 import typing
 
+from community_of_python_flake8_plugin.constants import FINAL_CLASS_EXCLUDED_BASES
+from community_of_python_flake8_plugin.utils import check_inherits_from_bases
 from community_of_python_flake8_plugin.violation_codes import ViolationCodes
 from community_of_python_flake8_plugin.violations import Violation
 
@@ -28,6 +30,12 @@ def is_protocol_class(class_node: ast.ClassDef) -> bool:
     return False
 
 
+def is_model_factory_class(class_node: ast.ClassDef) -> bool:
+    """Check if the class inherits from ModelFactory or SQLAlchemyFactory."""
+    model_factory_bases: typing.Final = {"ModelFactory", "SQLAlchemyFactory"}
+    return check_inherits_from_bases(class_node, model_factory_bases)
+
+
 @typing.final
 class FinalClassCheck(ast.NodeVisitor):
     def __init__(self, syntax_tree: ast.AST) -> None:  # noqa: ARG002
@@ -38,8 +46,12 @@ class FinalClassCheck(ast.NodeVisitor):
         self.generic_visit(ast_node)
 
     def _check_final_decorator(self, ast_node: ast.ClassDef) -> None:
-        # Skip Protocol classes and test classes
-        if is_protocol_class(ast_node) or ast_node.name.startswith("Test"):
+        # Skip Protocol classes, test classes, and ModelFactory classes
+        if (
+            is_protocol_class(ast_node) 
+            or ast_node.name.startswith("Test")
+            or is_model_factory_class(ast_node)
+        ):
             return
 
         if not contains_final_decorator(ast_node):

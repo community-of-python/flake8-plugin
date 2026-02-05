@@ -195,25 +195,25 @@ def test_type_annotation_validations(input_source: str, expected_output: list[st
         (
             "from polyfactory.factories.pydantic_factory import ModelFactory\n"
             "class MyFactory(ModelFactory):\n    def calculator(self): pass",
-            ["COP012"],
+            [],
         ),
         # No violation: ModelFactory generic methods should be exempt from COP009
         (
             "from polyfactory.factories.pydantic_factory import ModelFactory\nimport some_module\n"
             "class MyFactory(ModelFactory[some_module.SomeClass]):\n    def calculator(self): pass",
-            ["COP012"],
+            [],
         ),
         # No violation: ModelFactory classmethod should be exempt from COP009
         (
             "from polyfactory.factories.pydantic_factory import ModelFactory\n"
             "class MyFactory(ModelFactory):\n    @classmethod\n    def create(cls): pass",
-            ["COP012"],
+            [],
         ),
         # No violation: ModelFactory generic classmethod should be exempt from COP009
         (
             "from polyfactory.factories.pydantic_factory import ModelFactory\nimport some_module\n"
             "class MyFactory(ModelFactory[some_module.SomeClass]):\n    @classmethod\n    def create(cls): pass",
-            ["COP012"],
+            [],
         ),
         # No violation: cached_property imported directly should exempt function from COP009
         # (but triggers COP002 for import style)
@@ -362,10 +362,10 @@ def test_variable_usage_validations(input_source: str, expected_output: list[str
         ("import pydantic\nclass MyBaseModel(pydantic.BaseModel): ...", ["COP012"]),
         # COP012: Classes inheriting from RootModel now require final decorator
         ("from pydantic import RootModel\nclass MyRootModel(RootModel): ...", ["COP012"]),
-        # COP012: Classes inheriting from ModelFactory now require final decorator
+        # No violation: Classes inheriting from ModelFactory are exempt from final decorator requirement
         (
             "from polyfactory.factories.pydantic_factory import ModelFactory\nclass MyModelFactory(ModelFactory): ...",
-            ["COP012"],
+            [],
         ),
         # COP012: Exception classes now require final decorator
         (
@@ -377,13 +377,13 @@ def test_variable_usage_validations(input_source: str, expected_output: list[str
             "import dataclasses\n\n@dataclasses.dataclass\nclass ExampleChild(Example):\n    value: int\n",
             ["COP012", "COP014"],
         ),
-        # COP012: Classes inheriting from ModelFactory now require final decorator (with methods)
+        # No violation: Classes inheriting from ModelFactory are exempt from final decorator requirement (with methods)
         (
             "from polyfactory.factories.pydantic_factory import ModelFactory\n"
             "class MyModelFactory(ModelFactory):\n"
             "    def fn():\n"
             "        pass",
-            ["COP012"],
+            [],
         ),
     ],
 )
@@ -465,7 +465,7 @@ def test_module_level_validations(input_source: str, expected_output: list[str])
             "import polyfactory.factories.pydantic_factory\n"
             "class MyFactoryClass(polyfactory.factories.pydantic_factory.ModelFactory):\n"
             "    pass",
-            ["COP012"],
+            [],
         ),
         # COP014: Dataclass with init=False still needs slots and frozen
         (
