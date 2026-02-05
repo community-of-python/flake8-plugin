@@ -2,7 +2,6 @@ from __future__ import annotations
 import ast
 import typing
 
-from community_of_python_flake8_plugin.constants import MIN_NAME_LENGTH
 from community_of_python_flake8_plugin.violation_codes import ViolationCodes
 from community_of_python_flake8_plugin.violations import Violation
 
@@ -14,8 +13,8 @@ def _is_ignored_target(target_node: ast.expr) -> bool:
 
 
 @typing.final
-class COP015ComprehensionOnePrefixCheck(ast.NodeVisitor):
-    def __init__(self, syntax_tree: ast.AST) -> None:  # noqa: ARG002
+class COP015ForLoopOnePrefixCheck(ast.NodeVisitor):
+    def __init__(self, syntax_tree: ast.AST) -> None:
         self.violations: list[Violation] = []
         self.syntax_tree: typing.Final[ast.AST] = syntax_tree
 
@@ -97,7 +96,7 @@ class COP015ComprehensionOnePrefixCheck(ast.NodeVisitor):
                     Violation(
                         line_number=target_node.lineno,
                         column_number=target_node.col_offset,
-                        violation_code=ViolationCodes.COMPREHENSION_VARIABLE_PREFIX,
+                        violation_code=ViolationCodes.FOR_LOOP_VARIABLE_PREFIX,
                     )
                 )
         # For tuples (unpacking), validate each element
@@ -108,7 +107,7 @@ class COP015ComprehensionOnePrefixCheck(ast.NodeVisitor):
                         Violation(
                             line_number=one_element.lineno,
                             column_number=one_element.col_offset,
-                            violation_code=ViolationCodes.COMPREHENSION_VARIABLE_PREFIX,
+                            violation_code=ViolationCodes.FOR_LOOP_VARIABLE_PREFIX,
                         )
                     )
 
@@ -117,6 +116,6 @@ class COP015ComprehensionOnePrefixCheck(ast.NodeVisitor):
         # Allow underscore variables
         if identifier == "_":
             return True
-            
+
         # Check for one_ prefix
         return identifier.startswith("one_")

@@ -48,7 +48,7 @@ class ViolationCodes:
         code="COP014", description="Use dataclasses with kw_only=True, slots=True, frozen=True"
     )
 
-    # Comprehension variable prefix violations
-    COMPREHENSION_VARIABLE_PREFIX = ViolationCodeItem(
-        code="COP015", description="Comprehension variables must be prefixed with 'one_'"
+    # For-loop variable prefix violations
+    FOR_LOOP_VARIABLE_PREFIX = ViolationCodeItem(
+        code="COP015", description="For-loop variables must be prefixed with 'one_'"
     )

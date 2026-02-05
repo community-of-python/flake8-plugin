@@ -517,6 +517,16 @@ def test_dataclass_validations(input_source: str, expected_output: list[str]) ->
         ("result_long_name = (v for v in some_list)", ["COP005", "COP015"]),
         # COP005: Generator expression with one_ prefix (vars still too short for general rule)
         ("result_long_name = (one_v for one_v in some_list)", ["COP005"]),
+        # COP015: Regular for-loop without one_ prefix should be flagged
+        ("for v in some_list: pass", ["COP015"]),
+        # No violation: Regular for-loop with one_ prefix
+        ("for one_v in some_list: pass", []),
+        # No violation: Regular for-loop with underscore (ignored)
+        ("for _ in some_list: pass", []),
+        # No violation: Regular for-loop with tuple unpacking (ignored)
+        ("for x, y in pairs: pass", []),
+        # No violation: Regular for-loop with one_ prefix
+        ("for one_x in some_list: pass", []),
     ],
 )
 def test_module_vs_class_level_assignments(input_source: str, expected_output: list[str]) -> None:

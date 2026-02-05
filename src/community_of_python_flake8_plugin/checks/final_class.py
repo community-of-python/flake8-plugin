@@ -7,8 +7,8 @@ from community_of_python_flake8_plugin.violations import Violation
 
 
 def contains_final_decorator(class_node: ast.ClassDef) -> bool:
-    for decorator in class_node.decorator_list:
-        target_name = decorator.func if isinstance(decorator, ast.Call) else decorator
+    for one_decorator in class_node.decorator_list:
+        target_name = one_decorator.func if isinstance(one_decorator, ast.Call) else one_decorator
         if isinstance(target_name, ast.Name) and target_name.id == "final":
             return True
         if isinstance(target_name, ast.Attribute) and target_name.attr == "final":
@@ -18,12 +18,12 @@ def contains_final_decorator(class_node: ast.ClassDef) -> bool:
 
 def is_protocol_class(class_node: ast.ClassDef) -> bool:
     """Check if the class directly inherits from typing.Protocol."""
-    for base in class_node.bases:
+    for one_base in class_node.bases:
         # Check for direct Protocol reference: class MyClass(Protocol):
-        if isinstance(base, ast.Name) and base.id == "Protocol":
+        if isinstance(one_base, ast.Name) and one_base.id == "Protocol":
             return True
         # Check for attributed Protocol reference: class MyClass(typing.Protocol):
-        if isinstance(base, ast.Attribute) and base.attr == "Protocol":
+        if isinstance(one_base, ast.Attribute) and one_base.attr == "Protocol":
             return True
     return False
 

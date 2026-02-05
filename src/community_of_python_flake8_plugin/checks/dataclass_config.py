@@ -25,9 +25,9 @@ def has_required_dataclass_params(decorator: ast.expr) -> bool:
         return False
 
     keywords: typing.Final = {
-        keyword_item.arg: keyword_item.value
-        for keyword_item in decorator.keywords
-        if isinstance(keyword_item.value, ast.Constant)
+        one_keyword_item.arg: one_keyword_item.value
+        for one_keyword_item in decorator.keywords
+        if isinstance(one_keyword_item.value, ast.Constant)
     }
     kw_only_param: typing.Final = keywords.get("kw_only")
     slots_param: typing.Final = keywords.get("slots")
@@ -47,20 +47,20 @@ def has_required_dataclass_params(decorator: ast.expr) -> bool:
 
 def is_pydantic_model(class_node: ast.ClassDef) -> bool:
     """Check if class inherits from Pydantic BaseModel or RootModel."""
-    for base_class in class_node.bases:
-        if isinstance(base_class, ast.Name) and base_class.id in {"BaseModel", "RootModel"}:
+    for one_base_class in class_node.bases:
+        if isinstance(one_base_class, ast.Name) and one_base_class.id in {"BaseModel", "RootModel"}:
             return True
-        if isinstance(base_class, ast.Attribute) and base_class.attr in {"BaseModel", "RootModel"}:
+        if isinstance(one_base_class, ast.Attribute) and one_base_class.attr in {"BaseModel", "RootModel"}:
             return True
     return False
 
 
 def is_model_factory(class_node: ast.ClassDef) -> bool:
     """Check if class inherits from ModelFactory."""
-    for base_class in class_node.bases:
-        if isinstance(base_class, ast.Name) and base_class.id in {"ModelFactory", "SQLAlchemyFactory"}:
+    for one_base_class in class_node.bases:
+        if isinstance(one_base_class, ast.Name) and one_base_class.id in {"ModelFactory", "SQLAlchemyFactory"}:
             return True
-        if isinstance(base_class, ast.Attribute) and base_class.attr in {"ModelFactory", "SQLAlchemyFactory"}:
+        if isinstance(one_base_class, ast.Attribute) and one_base_class.attr in {"ModelFactory", "SQLAlchemyFactory"}:
             return True
     return False
 
@@ -82,9 +82,9 @@ class DataclassConfigCheck(ast.NodeVisitor):
             return
 
         # Check for dataclass decorator
-        for decorator in ast_node.decorator_list:
-            if is_dataclass_decorator(decorator):
-                if not has_required_dataclass_params(decorator):
+        for one_decorator in ast_node.decorator_list:
+            if is_dataclass_decorator(one_decorator):
+                if not has_required_dataclass_params(one_decorator):
                     self.violations.append(
                         Violation(
                             line_number=ast_node.lineno,
@@ -98,9 +98,9 @@ class DataclassConfigCheck(ast.NodeVisitor):
 
     def _inherits_from_exception(self, ast_node: ast.ClassDef) -> bool:
         """Check if class inherits from Exception or its subclasses."""
-        for base in ast_node.bases:
-            if isinstance(base, ast.Name) and ("Error" in base.id or "Exception" in base.id):
+        for one_base in ast_node.bases:
+            if isinstance(one_base, ast.Name) and ("Error" in one_base.id or "Exception" in one_base.id):
                 return True
-            if isinstance(base, ast.Attribute) and ("Error" in base.attr or "Exception" in base.attr):
+            if isinstance(one_base, ast.Attribute) and ("Error" in one_base.attr or "Exception" in one_base.attr):
                 return True
         return False

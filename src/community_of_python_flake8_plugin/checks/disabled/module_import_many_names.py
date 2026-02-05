@@ -17,16 +17,16 @@ from community_of_python_flake8_plugin.violations import Violation
 
 
 def check_module_has_all_declaration(module_node: ast.Module) -> bool:
-    for statement in module_node.body:
-        if isinstance(statement, ast.Assign) and any(
-            isinstance(target_element, ast.Name) and target_element.id == "__all__"
-            for target_element in statement.targets
+    for one_statement in module_node.body:
+        if isinstance(one_statement, ast.Assign) and any(
+            isinstance(one_target_element, ast.Name) and one_target_element.id == "__all__"
+            for one_target_element in one_statement.targets
         ):
             return True
         if (
-            isinstance(statement, ast.AnnAssign)
-            and isinstance(statement.target, ast.Name)
-            and statement.target.id == "__all__"
+            isinstance(one_statement, ast.AnnAssign)
+            and isinstance(one_statement.target, ast.Name)
+            and one_statement.target.id == "__all__"
         ):
             return True
     return False
@@ -77,9 +77,9 @@ class ModuleImportManyNamesCheck(ast.NodeVisitor):
             return
 
         if not any(
-            check_module_path_exists(f"{module_name}.{alias_element.name}")
-            for alias_element in ast_node.names
-            if isinstance(alias_element, ast.alias) and module_name is not None
+            check_module_path_exists(f"{module_name}.{one_alias_element.name}")
+            for one_alias_element in ast_node.names
+            if isinstance(one_alias_element, ast.alias) and module_name is not None
         ):
             self.violations.append(
                 Violation(
