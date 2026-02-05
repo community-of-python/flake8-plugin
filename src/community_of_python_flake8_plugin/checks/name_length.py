@@ -3,7 +3,7 @@ import ast
 import typing
 
 from community_of_python_flake8_plugin.constants import FINAL_CLASS_EXCLUDED_BASES, MIN_NAME_LENGTH
-from community_of_python_flake8_plugin.utils import check_inherits_from_bases, find_parent_class_definition
+from community_of_python_flake8_plugin.utils import check_inherits_from_bases, find_parent_class_definition, find_parent_function_definition
 from community_of_python_flake8_plugin.violation_codes import ViolationCodes
 from community_of_python_flake8_plugin.violations import Violation
 
@@ -204,14 +204,19 @@ class COP004NameLengthCheck(ast.NodeVisitor):
             return
 
         if len(identifier) < MIN_NAME_LENGTH:
-            # Determine if this is an attribute (inside a class) or variable (at module level)
+            # Determine if this is an attribute (inside a class but not in a method) or variable
+            parent_function = find_parent_function_definition(self.syntax_tree, ast_node)
+            
+            # It's an attribute only if it's in a class but NOT in a function/method
+            is_attribute = parent_class is not None and parent_function is None
+            
             self.violations.append(
                 Violation(
                     line_number=ast_node.lineno,
                     column_number=ast_node.col_offset,
                     violation_code=(
                         ViolationCodes.ATTRIBUTE_NAME_LENGTH
-                        if parent_class is not None
+                        if is_attribute
                         else ViolationCodes.VARIABLE_NAME_LENGTH
                     ),
                 )

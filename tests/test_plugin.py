@@ -262,6 +262,27 @@ def test_type_annotation_validations(input_source: str, expected_output: list[st
             "from faker import Faker\ndef some_func(arg: Faker): pass",
             ["COP009"],
         ),
+        # COP005: Local variables in methods should trigger variable rule, not attribute rule
+        (
+            "class ExampleClass:\n    def idx_after_latest_restart(self) -> int:\n        "
+            '"""Return the idx of the most recent restart in the list of events."""\n        '
+            "idx = 0\n        return idx",
+            ["COP012", "COP009", "COP005", "COP011"],
+        ),
+        # COP004 and COP005: Class attributes should trigger attribute rule, local variables should trigger variable rule
+        (
+            "class ExampleClass:\n    idx = 0\n    def method(self) -> int:\n        "
+            '"""Return the idx of the most recent restart."""\n        '
+            "idx = 0\n        return idx",
+            ["COP012", "COP009", "COP004", "COP005", "COP007", "COP011"],
+        ),
+        # COP005: Variables outside classes in functions should trigger variable rule
+        (
+            "def process_events() -> int:\n    "
+            '"""Process events and return index of latest restart."""\n    '
+            "idx = 0\n    return idx",
+            ["COP005", "COP011"],
+        ),
     ],
 )
 def test_naming_validations(input_source: str, expected_output: list[str]) -> None:
