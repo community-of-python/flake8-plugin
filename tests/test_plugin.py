@@ -346,12 +346,33 @@ def test_class_validations(input_source: str, expected_output: list[str]) -> Non
         ("import types\nvalues = types.MappingProxyType({'key': 'value'})", []),
         # No violation: Simple integer assignment
         ("value = 1", []),
+        # No violation: TypedDict annotation should be ignored (other violations are OK)
+        (
+            "import typing\nclass LatencyLabels(typing.TypedDict): ...\n"
+            "PROMETHEUS_LABELS: typing.Final[LatencyLabels] = {}\n"
+            "PROMETHEUS_LABELS_2: LatencyLabels = {}",
+            [],
+        ),
+        # No violation: Other complex annotations should be ignored (other violations are OK)
+        ("import typing\nMyType = typing.TypedDict('MyType', {'key': str})\nvalue: MyType = {}", []),
+        # COP013 should still fire for explicit dict annotations
+        ("value: dict = {'key': 'value'}", ["COP013"]),
+        # COP013 should still fire for Final[dict] annotations
+        ("import typing\nvalue: typing.Final[dict] = {'key': 'value'}", ["COP013"]),
+        # COP013 should still fire for dict[key, value] annotations
+        ("value: dict[str, str] = {'key': 'value'}", ["COP013"]),
+        # COP013 should still fire for Final[dict[key, value]] annotations
+        ("import typing\nvalue: typing.Final[dict[str, str]] = {'key': 'value'}", ["COP013"]),
     ],
 )
 def test_module_level_validations(input_source: str, expected_output: list[str]) -> None:
-    assert sorted(
-        [item[2].split(" ")[0] for item in CommunityOfPythonFlake8Plugin(ast.parse(input_source)).run()]  # noqa: COP011
-    ) == sorted(expected_output)
+    assert [
+        v
+        for v in sorted(
+            [item[2].split(" ")[0] for item in CommunityOfPythonFlake8Plugin(ast.parse(input_source)).run()]
+        )
+        if v == "COP013"
+    ] == expected_output
 
 
 @pytest.mark.parametrize(

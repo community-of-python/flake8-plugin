@@ -17,6 +17,54 @@ def is_mapping_proxy_type(annotation: ast.expr | None) -> bool:
     return False
 
 
+def _get_base_name(annotation_value: ast.expr) -> str:
+    """Extract the base name from an annotation value."""
+    if isinstance(annotation_value, ast.Name):
+        return annotation_value.id
+    if isinstance(annotation_value, ast.Attribute):
+        return annotation_value.attr
+    return ""
+
+
+def is_dict_type_annotation(annotation: ast.expr | None) -> bool:
+    """Check if annotation represents a dict type that should trigger COP013.
+
+    Returns True for:
+    - dict
+    - Final[dict]
+    - dict[key, value]
+    - Final[dict[key, value]]
+
+    Returns False for TypedDict and other non-dict annotations.
+    """
+    is_dict_annotation = False
+
+    if annotation is not None:
+        # Handle simple name annotations like 'dict'
+        if isinstance(annotation, ast.Name):
+            is_dict_annotation = annotation.id == "dict"
+        # Handle attribute annotations like 'typing.Final'
+        elif isinstance(annotation, ast.Attribute):
+            is_dict_annotation = annotation.attr == "dict"
+        # Handle subscript annotations like 'dict[str, int]' or 'Final[dict]'
+        elif isinstance(annotation, ast.Subscript):
+            base_name: typing.Final = _get_base_name(annotation.value)
+            if base_name:
+                # Check for Final[...] annotations
+                if base_name == "Final":
+                    # Extract the inner type from Final[inner_type]
+                    inner_type = annotation.slice
+                    # Handle Python 3.8 vs 3.9+ differences
+                    if hasattr(inner_type, "value"):  # Python 3.8
+                        inner_type = inner_type.value
+                    is_dict_annotation = is_dict_type_annotation(inner_type)
+                # Check for dict[...] annotations
+                elif base_name == "dict":
+                    is_dict_annotation = True
+
+    return is_dict_annotation
+
+
 @typing.final
 class MappingProxyCheck(ast.NodeVisitor):
     def __init__(self, syntax_tree: ast.AST) -> None:  # noqa: ARG002
@@ -31,6 +79,10 @@ class MappingProxyCheck(ast.NodeVisitor):
     def _check_mapping_assignment(self, ast_node: ast.Assign | ast.AnnAssign) -> None:
         # Skip annotated assignments with MappingProxyType annotation
         if isinstance(ast_node, ast.AnnAssign) and is_mapping_proxy_type(ast_node.annotation):
+            return
+
+        # Skip annotated assignments that are not dict-like types
+        if isinstance(ast_node, ast.AnnAssign) and not is_dict_type_annotation(ast_node.annotation):
             return
 
         # Check for dictionary literals assigned to module-level variables
