@@ -280,6 +280,11 @@ def test_naming_validations(input_source: str, expected_output: list[str]) -> No
         (
             "def fetch_value() -> int:\n    result_value = 1\n    another_value = result_value\n    "
             "return another_value",
+            ["COP011", "COP011"],
+        ),
+        # COP011: Single-line assignment used immediately in next line
+        (
+            "def func():\n    a = 1\n    b = a + 1",
             ["COP011"],
         ),
         # No violation: Variable used multiple times
@@ -296,6 +301,21 @@ def test_naming_validations(input_source: str, expected_output: list[str]) -> No
         ("def fetch_item():\n    for _, one_value in values: print(f'{one_value}')", []),
         # No violation: Tuple unpacking with underscore variables
         ("def parse_module():\n    parent, _, _child = module_name.rpartition('.')\n    return parent", []),
+        # No violation: Single-line assignment with intervening lines
+        (
+            "def func():\n    a = 1\n    # some things here\n    b = a + 1",
+            [],
+        ),
+        # No violation: Multi-line assignment used immediately
+        (
+            "def func():\n    a = (\n        one_item for one_item\n        in lst\n    )\n    b = a[0]",
+            [],
+        ),
+        # No violation: Tuple unpacking assignment
+        (
+            "def func():\n    a, b = (1, 2)\n    c = a + b",
+            [],
+        ),
     ],
 )
 def test_variable_usage_validations(input_source: str, expected_output: list[str]) -> None:
