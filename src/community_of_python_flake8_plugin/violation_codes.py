@@ -47,3 +47,8 @@ class ViolationCodes:
     DATACLASS_CONFIG = ViolationCodeItem(
         code="COP014", description="Use dataclasses with kw_only=True, slots=True, frozen=True"
     )
+
+    # Comprehension variable prefix violations
+    COMPREHENSION_VARIABLE_PREFIX = ViolationCodeItem(
+        code="COP015", description="Comprehension variables must be prefixed with 'one_'"
+    )
