@@ -2,7 +2,6 @@ from __future__ import annotations
 import ast
 import typing
 
-from community_of_python_flake8_plugin.constants import FINAL_CLASS_EXCLUDED_BASES
 from community_of_python_flake8_plugin.utils import check_inherits_from_bases
 from community_of_python_flake8_plugin.violation_codes import ViolationCodes
 from community_of_python_flake8_plugin.violations import Violation
@@ -27,13 +26,18 @@ def is_protocol_class(class_node: ast.ClassDef) -> bool:
         # Check for attributed Protocol reference: class MyClass(typing.Protocol):
         if isinstance(one_base, ast.Attribute) and one_base.attr == "Protocol":
             return True
+        # Check for subscripted Protocol reference: class MyClass(Protocol[SomeType]):
+        if isinstance(one_base, ast.Subscript):
+            if isinstance(one_base.value, ast.Name) and one_base.value.id == "Protocol":
+                return True
+            if isinstance(one_base.value, ast.Attribute) and one_base.value.attr == "Protocol":
+                return True
     return False
 
 
 def is_model_factory_class(class_node: ast.ClassDef) -> bool:
     """Check if the class inherits from ModelFactory or SQLAlchemyFactory."""
-    model_factory_bases: typing.Final = {"ModelFactory", "SQLAlchemyFactory"}
-    return check_inherits_from_bases(class_node, model_factory_bases)
+    return check_inherits_from_bases(class_node, {"ModelFactory", "SQLAlchemyFactory"})
 
 
 @typing.final
@@ -47,11 +51,7 @@ class FinalClassCheck(ast.NodeVisitor):
 
     def _check_final_decorator(self, ast_node: ast.ClassDef) -> None:
         # Skip Protocol classes, test classes, and ModelFactory classes
-        if (
-            is_protocol_class(ast_node) 
-            or ast_node.name.startswith("Test")
-            or is_model_factory_class(ast_node)
-        ):
+        if is_protocol_class(ast_node) or ast_node.name.startswith("Test") or is_model_factory_class(ast_node):
             return
 
         if not contains_final_decorator(ast_node):

@@ -109,6 +109,7 @@ VERB_PREFIXES: typing.Final = {
     "submit",
     "clear",
     "undo",
+    "cache",
 }
 
 SCALAR_ANNOTATIONS: typing.Final = {"int", "str", "float", "bool", "bytes", "complex"}

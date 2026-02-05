@@ -48,8 +48,8 @@ from community_of_python_flake8_plugin.plugin import CommunityOfPythonFlake8Plug
 def test_import_stdlib_validations(input_source: str, expected_output: list[str]) -> None:
     assert sorted(
         [
-            violation_item[2].split(" ")[0]
-            for violation_item in CommunityOfPythonFlake8Plugin(ast.parse(input_source)).run()
+            one_violation_item[2].split(" ")[0]
+            for one_violation_item in CommunityOfPythonFlake8Plugin(ast.parse(input_source)).run()
         ]  # noqa: COP011
     ) == sorted(expected_output)
 
@@ -76,8 +76,8 @@ def test_import_stdlib_validations(input_source: str, expected_output: list[str]
 def test_import_many_names_validations(input_source: str, expected_output: list[str]) -> None:
     assert sorted(
         [
-            violation_item[2].split(" ")[0]
-            for violation_item in CommunityOfPythonFlake8Plugin(ast.parse(input_source)).run()
+            one_violation_item[2].split(" ")[0]
+            for one_violation_item in CommunityOfPythonFlake8Plugin(ast.parse(input_source)).run()
         ]  # noqa: COP011
     ) == sorted(expected_output)
 
@@ -100,8 +100,8 @@ def test_import_many_names_validations(input_source: str, expected_output: list[
 def test_type_annotation_validations(input_source: str, expected_output: list[str]) -> None:
     assert sorted(
         [
-            violation_item[2].split(" ")[0]
-            for violation_item in CommunityOfPythonFlake8Plugin(ast.parse(input_source)).run()
+            one_violation_item[2].split(" ")[0]
+            for one_violation_item in CommunityOfPythonFlake8Plugin(ast.parse(input_source)).run()
         ]  # noqa: COP011
     ) == sorted(expected_output)
 
@@ -269,7 +269,8 @@ def test_type_annotation_validations(input_source: str, expected_output: list[st
             "idx = 0\n        return idx",
             ["COP012", "COP009", "COP005", "COP011"],
         ),
-        # COP004 and COP005: Class attributes should trigger attribute rule, local variables should trigger variable rule
+        # COP004 and COP005: Class attributes should trigger attribute rule,
+        # local variables should trigger variable rule
         (
             "class ExampleClass:\n    idx = 0\n    def method(self) -> int:\n        "
             '"""Return the idx of the most recent restart."""\n        '
@@ -288,8 +289,8 @@ def test_type_annotation_validations(input_source: str, expected_output: list[st
 def test_naming_validations(input_source: str, expected_output: list[str]) -> None:
     assert sorted(
         [
-            violation_item[2].split(" ")[0]
-            for violation_item in CommunityOfPythonFlake8Plugin(ast.parse(input_source)).run()
+            one_violation_item[2].split(" ")[0]
+            for one_violation_item in CommunityOfPythonFlake8Plugin(ast.parse(input_source)).run()
         ]  # noqa: COP011
     ) == sorted(expected_output)
 
@@ -342,8 +343,8 @@ def test_naming_validations(input_source: str, expected_output: list[str]) -> No
 def test_variable_usage_validations(input_source: str, expected_output: list[str]) -> None:
     assert sorted(
         [
-            violation_item[2].split(" ")[0]
-            for violation_item in CommunityOfPythonFlake8Plugin(ast.parse(input_source)).run()
+            one_violation_item[2].split(" ")[0]
+            for one_violation_item in CommunityOfPythonFlake8Plugin(ast.parse(input_source)).run()
         ]  # noqa: COP011
     ) == sorted(expected_output)
 
@@ -385,13 +386,47 @@ def test_variable_usage_validations(input_source: str, expected_output: list[str
             "        pass",
             [],
         ),
+        # No violation: Protocol classes should not require @typing.final
+        (
+            "import typing\nclass MyProtocol(typing.Protocol):\n    def fetch_value(self) -> int: ...\n",
+            [],
+        ),
+        # No violation: Direct Protocol reference (but triggers COP002 for import style)
+        (
+            "from typing import Protocol\nclass MyProtocol(Protocol):\n    def fetch_value(self) -> int: ...\n",
+            ["COP002"],
+        ),
+        # No violation: typing_extensions.Protocol
+        (
+            "import typing_extensions\n"
+            "class MyProtocol(typing_extensions.Protocol):\n"
+            "    def fetch_value(self) -> int: ...\n",
+            [],
+        ),
+        # No violation: Direct typing_extensions reference
+        (
+            "from typing_extensions import Protocol\n"
+            "class MyProtocol(Protocol):\n"
+            "    def fetch_value(self) -> int: ...\n",
+            [],
+        ),
+        # No violation: Protocol with generic type parameter
+        (
+            "import typing\nclass MyProtocol(typing.Protocol[int]):\n    def fetch_value(self) -> int: ...\n",
+            [],
+        ),
+        # No violation: Protocol with multiple inheritance
+        (
+            "import typing\nclass MyProtocol(typing.Protocol, object):\n    def fetch_value(self) -> int: ...\n",
+            [],
+        ),
     ],
 )
 def test_class_validations(input_source: str, expected_output: list[str]) -> None:
     assert sorted(
         [
-            violation_item[2].split(" ")[0]
-            for violation_item in CommunityOfPythonFlake8Plugin(ast.parse(input_source)).run()
+            one_violation_item[2].split(" ")[0]
+            for one_violation_item in CommunityOfPythonFlake8Plugin(ast.parse(input_source)).run()
         ]  # noqa: COP011
     ) == sorted(expected_output)
 
@@ -426,14 +461,14 @@ def test_class_validations(input_source: str, expected_output: list[str]) -> Non
 )
 def test_module_level_validations(input_source: str, expected_output: list[str]) -> None:
     assert [
-        cop013_violation
-        for cop013_violation in sorted(
+        one_cop013_violation
+        for one_cop013_violation in sorted(
             [
-                violation_item[2].split(" ")[0]
-                for violation_item in CommunityOfPythonFlake8Plugin(ast.parse(input_source)).run()
+                one_violation_item[2].split(" ")[0]
+                for one_violation_item in CommunityOfPythonFlake8Plugin(ast.parse(input_source)).run()
             ]
         )
-        if cop013_violation == "COP013"
+        if one_cop013_violation == "COP013"
     ] == expected_output
 
 
@@ -507,8 +542,8 @@ def test_module_level_validations(input_source: str, expected_output: list[str])
 def test_dataclass_validations(input_source: str, expected_output: list[str]) -> None:
     assert sorted(
         [
-            violation_item[2].split(" ")[0]
-            for violation_item in CommunityOfPythonFlake8Plugin(ast.parse(input_source)).run()
+            one_violation_item[2].split(" ")[0]
+            for one_violation_item in CommunityOfPythonFlake8Plugin(ast.parse(input_source)).run()
         ]  # noqa: COP011
     ) == sorted(expected_output)
 
@@ -573,8 +608,8 @@ def test_dataclass_validations(input_source: str, expected_output: list[str]) ->
 def test_module_vs_class_level_assignments(input_source: str, expected_output: list[str]) -> None:
     assert sorted(
         [
-            violation_item[2].split(" ")[0]
-            for violation_item in CommunityOfPythonFlake8Plugin(ast.parse(input_source)).run()
+            one_violation_item[2].split(" ")[0]
+            for one_violation_item in CommunityOfPythonFlake8Plugin(ast.parse(input_source)).run()
         ]  # noqa: COP011
     ) == sorted(expected_output)
 
@@ -592,7 +627,7 @@ def test_module_vs_class_level_assignments(input_source: str, expected_output: l
 def test_combined_validations(input_source: str, expected_output: list[str]) -> None:
     assert sorted(
         [
-            violation_item[2].split(" ")[0]
-            for violation_item in CommunityOfPythonFlake8Plugin(ast.parse(input_source)).run()
+            one_violation_item[2].split(" ")[0]
+            for one_violation_item in CommunityOfPythonFlake8Plugin(ast.parse(input_source)).run()
         ]  # noqa: COP011
     ) == sorted(expected_output)

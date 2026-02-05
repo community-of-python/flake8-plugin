@@ -31,23 +31,23 @@ class CommunityOfPythonFlake8Plugin:
         self.ast_syntax_tree: typing.Final[ast.AST] = tree
 
     def run(self) -> Iterable[tuple[int, int, str, type[object]]]:  # noqa: COP007
-        for check_instance in self._collect_checks():
-            for violation in check_instance.violations:
+        for one_check_instance in self._collect_checks():
+            for one_violation in one_check_instance.violations:
                 yield (
-                    violation.line_number,
-                    violation.column_number,
-                    f"{violation.violation_code.code} {violation.violation_code.description}",
+                    one_violation.line_number,
+                    one_violation.column_number,
+                    f"{one_violation.violation_code.code} {one_violation.violation_code.description}",
                     type(self),
                 )
 
     def _collect_checks(self) -> list[PluginCheckProtocol]:
         checks_collection: typing.Final = []
-        for _, module_name, _ in pkgutil.iter_modules(checks_module.__path__):
-            imported_module = importlib.import_module(f"{checks_module.__name__}.{module_name}")
+        for _, one_module_name, _ in pkgutil.iter_modules(checks_module.__path__):
+            imported_module = importlib.import_module(f"{checks_module.__name__}.{one_module_name}")
 
-            for attribute_name in dir(imported_module):
-                attribute = getattr(imported_module, attribute_name)
-                if isinstance(attribute, type) and attribute_name.endswith("Check") and hasattr(attribute, "visit"):
+            for one_attribute_name in dir(imported_module):
+                attribute = getattr(imported_module, one_attribute_name)
+                if isinstance(attribute, type) and one_attribute_name.endswith("Check") and hasattr(attribute, "visit"):
                     check_instance = attribute(self.ast_syntax_tree)
                     check_instance.visit(self.ast_syntax_tree)
                     checks_collection.append(check_instance)

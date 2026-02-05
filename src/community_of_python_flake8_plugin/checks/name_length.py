@@ -3,7 +3,11 @@ import ast
 import typing
 
 from community_of_python_flake8_plugin.constants import FINAL_CLASS_EXCLUDED_BASES, MIN_NAME_LENGTH
-from community_of_python_flake8_plugin.utils import check_inherits_from_bases, find_parent_class_definition, find_parent_function_definition
+from community_of_python_flake8_plugin.utils import (
+    check_inherits_from_bases,
+    find_parent_class_definition,
+    find_parent_function_definition,
+)
 from community_of_python_flake8_plugin.violation_codes import ViolationCodes
 from community_of_python_flake8_plugin.violations import Violation
 
@@ -33,7 +37,7 @@ def check_is_whitelisted_annotation(annotation: ast.expr | None) -> bool:
 def check_is_pytest_fixture(ast_node: ast.AST) -> bool:
     if not isinstance(ast_node, (ast.FunctionDef, ast.AsyncFunctionDef)):
         return False
-    return any(check_is_fixture_decorator(decorator) for decorator in ast_node.decorator_list)  # noqa: COP011
+    return any(check_is_fixture_decorator(one_decorator) for one_decorator in ast_node.decorator_list)  # noqa: COP011
 
 
 def check_is_fixture_decorator(decorator: ast.expr) -> bool:
@@ -58,9 +62,11 @@ class COP004NameLengthCheck(ast.NodeVisitor):
         self.generic_visit(ast_node)
 
     def visit_Assign(self, ast_node: ast.Assign) -> None:
-        for target in ast_node.targets:
-            if isinstance(target, ast.Name):
-                self.validate_name_length(target.id, ast_node, find_parent_class_definition(self.syntax_tree, ast_node))
+        for one_target in ast_node.targets:
+            if isinstance(one_target, ast.Name):
+                self.validate_name_length(
+                    one_target.id, ast_node, find_parent_class_definition(self.syntax_tree, ast_node)
+                )
         self.generic_visit(ast_node)
 
     def visit_FunctionDef(self, ast_node: ast.FunctionDef) -> None:
@@ -79,18 +85,18 @@ class COP004NameLengthCheck(ast.NodeVisitor):
         self.generic_visit(ast_node)
 
     def visit_ListComp(self, ast_node: ast.ListComp) -> None:
-        for comprehension in ast_node.generators:
-            self._validate_comprehension_target(comprehension.target)
+        for one_comprehension in ast_node.generators:
+            self._validate_comprehension_target(one_comprehension.target)
         self.generic_visit(ast_node)
 
     def visit_SetComp(self, ast_node: ast.SetComp) -> None:
-        for comprehension in ast_node.generators:
-            self._validate_comprehension_target(comprehension.target)
+        for one_comprehension in ast_node.generators:
+            self._validate_comprehension_target(one_comprehension.target)
         self.generic_visit(ast_node)
 
     def visit_DictComp(self, ast_node: ast.DictComp) -> None:
-        for comprehension in ast_node.generators:
-            self._validate_comprehension_target(comprehension.target)
+        for one_comprehension in ast_node.generators:
+            self._validate_comprehension_target(one_comprehension.target)
         self.generic_visit(ast_node)
 
     def visit_Lambda(self, ast_node: ast.Lambda) -> None:
@@ -98,9 +104,9 @@ class COP004NameLengthCheck(ast.NodeVisitor):
         self.generic_visit(ast_node)
 
     def visit_With(self, ast_node: ast.With) -> None:
-        for item in ast_node.items:
-            if item.optional_vars is not None:
-                self._validate_with_target(item.optional_vars)
+        for one_item in ast_node.items:
+            if one_item.optional_vars is not None:
+                self._validate_with_target(one_item.optional_vars)
         self.generic_visit(ast_node)
 
     def visit_ExceptHandler(self, ast_node: ast.ExceptHandler) -> None:
@@ -109,18 +115,18 @@ class COP004NameLengthCheck(ast.NodeVisitor):
         self.generic_visit(ast_node)
 
     def visit_GeneratorExp(self, ast_node: ast.GeneratorExp) -> None:
-        for comprehension in ast_node.generators:
-            self._validate_comprehension_target(comprehension.target)
+        for one_comprehension in ast_node.generators:
+            self._validate_comprehension_target(one_comprehension.target)
         self.generic_visit(ast_node)
 
     def _validate_function_args(self, arguments_node: ast.arguments) -> None:
         # Process all argument types
-        for argument in arguments_node.posonlyargs:
-            self._validate_argument_name_length(argument)
-        for argument in arguments_node.args:
-            self._validate_argument_name_length(argument)
-        for argument in arguments_node.kwonlyargs:
-            self._validate_argument_name_length(argument)
+        for one_argument in arguments_node.posonlyargs:
+            self._validate_argument_name_length(one_argument)
+        for one_argument in arguments_node.args:
+            self._validate_argument_name_length(one_argument)
+        for one_argument in arguments_node.kwonlyargs:
+            self._validate_argument_name_length(one_argument)
 
         if arguments_node.vararg is not None:
             self._validate_argument_name_length(arguments_node.vararg)
@@ -157,8 +163,8 @@ class COP004NameLengthCheck(ast.NodeVisitor):
                 )
         elif isinstance(comprehension_target, ast.Tuple):
             # Handle tuple unpacking in comprehensions like [(a, b) for a, b in pairs]
-            for elt in comprehension_target.elts:
-                self._validate_comprehension_target(elt)
+            for one_elt in comprehension_target.elts:
+                self._validate_comprehension_target(one_elt)
 
     def _validate_with_target(self, target_node: ast.expr) -> None:
         if isinstance(target_node, ast.Name):
@@ -173,8 +179,8 @@ class COP004NameLengthCheck(ast.NodeVisitor):
                 )
         elif isinstance(target_node, ast.Tuple):
             # Handle tuple unpacking in with statements like with open(f1) as f1, open(f2) as f2:
-            for elt in target_node.elts:
-                self._validate_with_target(elt)
+            for one_elt in target_node.elts:
+                self._validate_with_target(one_elt)
 
     def _validate_except_target(self, ast_node: ast.ExceptHandler) -> None:
         # For except targets, we'll treat them as variables
@@ -205,19 +211,17 @@ class COP004NameLengthCheck(ast.NodeVisitor):
 
         if len(identifier) < MIN_NAME_LENGTH:
             # Determine if this is an attribute (inside a class but not in a method) or variable
-            parent_function = find_parent_function_definition(self.syntax_tree, ast_node)
-            
+            parent_function: typing.Final = find_parent_function_definition(self.syntax_tree, ast_node)
+
             # It's an attribute only if it's in a class but NOT in a function/method
-            is_attribute = parent_class is not None and parent_function is None
-            
+            is_attribute: typing.Final = parent_class is not None and parent_function is None
+
             self.violations.append(
                 Violation(
                     line_number=ast_node.lineno,
                     column_number=ast_node.col_offset,
                     violation_code=(
-                        ViolationCodes.ATTRIBUTE_NAME_LENGTH
-                        if is_attribute
-                        else ViolationCodes.VARIABLE_NAME_LENGTH
+                        ViolationCodes.ATTRIBUTE_NAME_LENGTH if is_attribute else ViolationCodes.VARIABLE_NAME_LENGTH
                     ),
                 )
             )
@@ -245,12 +249,12 @@ class COP004NameLengthCheck(ast.NodeVisitor):
 
     def validate_function_args(self, ast_node: ast.FunctionDef | ast.AsyncFunctionDef) -> None:
         # Process all argument types
-        for argument in ast_node.args.posonlyargs:
-            self.validate_argument_name_length(argument)
-        for argument in ast_node.args.args:
-            self.validate_argument_name_length(argument)
-        for argument in ast_node.args.kwonlyargs:
-            self.validate_argument_name_length(argument)
+        for one_argument in ast_node.args.posonlyargs:
+            self.validate_argument_name_length(one_argument)
+        for one_argument in ast_node.args.args:
+            self.validate_argument_name_length(one_argument)
+        for one_argument in ast_node.args.kwonlyargs:
+            self.validate_argument_name_length(one_argument)
 
         if ast_node.args.vararg is not None:
             self.validate_argument_name_length(ast_node.args.vararg)

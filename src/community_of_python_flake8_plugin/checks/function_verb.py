@@ -17,13 +17,15 @@ def check_is_ignored_name(identifier: str) -> bool:
 
 
 def check_is_verb_name(identifier: str) -> bool:
-    return any(identifier == verb_name or identifier.startswith(f"{verb_name}_") for verb_name in VERB_PREFIXES)
+    return any(
+        identifier == one_verb_name or identifier.startswith(f"{one_verb_name}_") for one_verb_name in VERB_PREFIXES
+    )
 
 
 def check_is_property(function_node: ast.AST) -> bool:
     if not isinstance(function_node, (ast.FunctionDef, ast.AsyncFunctionDef)):
         return False
-    return any(check_is_property_decorator(decorator) for decorator in function_node.decorator_list)  # noqa: COP011
+    return any(check_is_property_decorator(one_decorator) for one_decorator in function_node.decorator_list)  # noqa: COP011
 
 
 def check_is_property_decorator(decorator: ast.expr) -> bool:  # noqa: PLR0911
@@ -56,7 +58,7 @@ def check_is_property_decorator(decorator: ast.expr) -> bool:  # noqa: PLR0911
 def check_is_pytest_fixture(function_node: ast.AST) -> bool:
     if not isinstance(function_node, (ast.FunctionDef, ast.AsyncFunctionDef)):
         return False
-    return any(check_is_fixture_decorator(decorator) for decorator in function_node.decorator_list)  # noqa: COP011
+    return any(check_is_fixture_decorator(one_decorator) for one_decorator in function_node.decorator_list)  # noqa: COP011
 
 
 def check_is_fixture_decorator(decorator: ast.expr) -> bool:

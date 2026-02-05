@@ -71,9 +71,9 @@ class MappingProxyCheck(ast.NodeVisitor):
         self.violations: list[Violation] = []
 
     def visit_Module(self, ast_node: ast.Module) -> None:
-        for statement in ast_node.body:
-            if isinstance(statement, (ast.Assign, ast.AnnAssign)):
-                self._check_mapping_assignment(statement)
+        for one_statement in ast_node.body:
+            if isinstance(one_statement, (ast.Assign, ast.AnnAssign)):
+                self._check_mapping_assignment(one_statement)
         self.generic_visit(ast_node)
 
     def _check_mapping_assignment(self, ast_node: ast.Assign | ast.AnnAssign) -> None:
@@ -99,8 +99,8 @@ class MappingProxyCheck(ast.NodeVisitor):
         # Only check module-level assignments (no parent function/class)
         if assigned_value is not None and isinstance(assigned_value, ast.Dict) and assignment_targets:
             # Check if this is a module-level assignment
-            for target in assignment_targets:  # noqa: COP011
-                if isinstance(target, ast.Name):
+            for one_target in assignment_targets:  # noqa: COP011
+                if isinstance(one_target, ast.Name):
                     self.violations.append(
                         Violation(
                             line_number=ast_node.lineno,

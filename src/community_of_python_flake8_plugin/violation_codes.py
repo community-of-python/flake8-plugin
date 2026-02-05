@@ -35,7 +35,9 @@ class ViolationCodes:
     ASYNC_GET_PREFIX = ViolationCodeItem(code="COP010", description="Avoid get_ prefix in async function names")
 
     # Variable usage violations
-    TEMP_VAR = ViolationCodeItem(code="COP011", description="Inline variables that are used only once")
+    TEMP_VAR = ViolationCodeItem(
+        code="COP011", description="Inline those temporary variables that are used only once and close to assignment"
+    )
 
     # Class related violations
     FINAL_CLASS = ViolationCodeItem(code="COP012", description="Classes must be marked final with @typing.final")
