@@ -78,6 +78,119 @@ class COP004NameLengthCheck(ast.NodeVisitor):
             self.validate_class_name_length(ast_node)
         self.generic_visit(ast_node)
 
+    def visit_ListComp(self, ast_node: ast.ListComp) -> None:
+        for comprehension in ast_node.generators:
+            self._validate_comprehension_target(comprehension.target)
+        self.generic_visit(ast_node)
+
+    def visit_SetComp(self, ast_node: ast.SetComp) -> None:
+        for comprehension in ast_node.generators:
+            self._validate_comprehension_target(comprehension.target)
+        self.generic_visit(ast_node)
+
+    def visit_DictComp(self, ast_node: ast.DictComp) -> None:
+        for comprehension in ast_node.generators:
+            self._validate_comprehension_target(comprehension.target)
+        self.generic_visit(ast_node)
+
+    def visit_Lambda(self, ast_node: ast.Lambda) -> None:
+        self._validate_function_args(ast_node.args)
+        self.generic_visit(ast_node)
+
+    def visit_With(self, ast_node: ast.With) -> None:
+        for item in ast_node.items:
+            if item.optional_vars is not None:
+                self._validate_with_target(item.optional_vars)
+        self.generic_visit(ast_node)
+
+    def visit_ExceptHandler(self, ast_node: ast.ExceptHandler) -> None:
+        if ast_node.name is not None:
+            self._validate_except_target(ast_node)
+        self.generic_visit(ast_node)
+
+    def visit_GeneratorExp(self, ast_node: ast.GeneratorExp) -> None:
+        for comprehension in ast_node.generators:
+            self._validate_comprehension_target(comprehension.target)
+        self.generic_visit(ast_node)
+
+    def _validate_function_args(self, arguments_node: ast.arguments) -> None:
+        # Process all argument types
+        for argument in arguments_node.posonlyargs:
+            self._validate_argument_name_length(argument)
+        for argument in arguments_node.args:
+            self._validate_argument_name_length(argument)
+        for argument in arguments_node.kwonlyargs:
+            self._validate_argument_name_length(argument)
+
+        if arguments_node.vararg is not None:
+            self._validate_argument_name_length(arguments_node.vararg)
+        if arguments_node.kwarg is not None:
+            self._validate_argument_name_length(arguments_node.kwarg)
+
+    def _validate_argument_name_length(self, argument: ast.arg) -> None:
+        if argument.arg in {"self", "cls"}:
+            return
+        if check_is_ignored_name(argument.arg):
+            return
+        if check_is_whitelisted_annotation(argument.annotation):
+            return
+
+        if len(argument.arg) < MIN_NAME_LENGTH:
+            self.violations.append(
+                Violation(
+                    line_number=argument.lineno,
+                    column_number=argument.col_offset,
+                    violation_code=ViolationCodes.ARGUMENT_NAME_LENGTH,
+                )
+            )
+
+    def _validate_comprehension_target(self, comprehension_target: ast.expr) -> None:
+        if isinstance(comprehension_target, ast.Name):
+            # For comprehension targets, we'll treat them as variables
+            if not check_is_ignored_name(comprehension_target.id) and len(comprehension_target.id) < MIN_NAME_LENGTH:
+                self.violations.append(
+                    Violation(
+                        line_number=comprehension_target.lineno,
+                        column_number=comprehension_target.col_offset,
+                        violation_code=ViolationCodes.VARIABLE_NAME_LENGTH,
+                    )
+                )
+        elif isinstance(comprehension_target, ast.Tuple):
+            # Handle tuple unpacking in comprehensions like [(a, b) for a, b in pairs]
+            for elt in comprehension_target.elts:
+                self._validate_comprehension_target(elt)
+
+    def _validate_with_target(self, target_node: ast.expr) -> None:
+        if isinstance(target_node, ast.Name):
+            # For with targets, we'll treat them as variables
+            if not check_is_ignored_name(target_node.id) and len(target_node.id) < MIN_NAME_LENGTH:
+                self.violations.append(
+                    Violation(
+                        line_number=target_node.lineno,
+                        column_number=target_node.col_offset,
+                        violation_code=ViolationCodes.VARIABLE_NAME_LENGTH,
+                    )
+                )
+        elif isinstance(target_node, ast.Tuple):
+            # Handle tuple unpacking in with statements like with open(f1) as f1, open(f2) as f2:
+            for elt in target_node.elts:
+                self._validate_with_target(elt)
+
+    def _validate_except_target(self, ast_node: ast.ExceptHandler) -> None:
+        # For except targets, we'll treat them as variables
+        if (
+            ast_node.name is not None
+            and not check_is_ignored_name(ast_node.name)
+            and len(ast_node.name) < MIN_NAME_LENGTH
+        ):
+            self.violations.append(
+                Violation(
+                    line_number=ast_node.lineno,
+                    column_number=0,  # ast.ExceptHandler doesn't have col_offset
+                    violation_code=ViolationCodes.VARIABLE_NAME_LENGTH,
+                )
+            )
+
     def validate_name_length(self, identifier: str, ast_node: ast.stmt, parent_class: ast.ClassDef | None) -> None:
         if check_is_ignored_name(identifier):
             return

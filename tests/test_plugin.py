@@ -459,6 +459,26 @@ def test_dataclass_validations(input_source: str, expected_output: list[str]) ->
         ("class ExampleClass:\n    a: int = 1", ["COP012", "COP004"]),
         # COP004: Class-level Final assignment should still be treated as attribute
         ("class ExampleClass:\n    client: typing.Final = CreditStatementClient()", ["COP012", "COP004"]),
+        # COP005: List comprehension with short variable names should be flagged
+        ("result_long_name = [v for v in some_list]", ["COP005"]),
+        # No violation: List comprehension with long variable names
+        ("result_long_name = [value for value in some_list]", []),
+        # No violation: List comprehension with underscore variable
+        ("result_long_name = [_ for _ in some_list]", []),
+        # COP005: With statement with short variable name should be flagged
+        ("with open('file.txt') as f: pass", ["COP005"]),
+        # No violation: With statement with long variable name
+        ("with open('file.txt') as file_handle: pass", []),
+        # COP005: Except handler with short variable name should be flagged
+        ("try: pass\nexcept Exception as e: pass", ["COP005"]),
+        # No violation: Except handler with long variable name
+        ("try: pass\nexcept Exception as error_exc: pass", []),
+        # COP006: Lambda with short argument names should be flagged
+        ("func_long_name = lambda x: x * 2", ["COP006"]),
+        # No violation: Lambda with long argument names
+        ("func_long_name = lambda value: value * 2", []),
+        # COP006: Lambda with multiple short arguments should be flagged
+        ("func_long_name = lambda a, b: a + b", ["COP006", "COP006"]),
     ],
 )
 def test_module_vs_class_level_assignments(input_source: str, expected_output: list[str]) -> None:
