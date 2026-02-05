@@ -285,7 +285,7 @@ def test_naming_validations(input_source: str, expected_output: list[str]) -> No
         # COP011: Single-line assignment used immediately in next line
         (
             "def func():\n    a = 1\n    b = a + 1",
-            ["COP011"],
+            ["COP005", "COP005", "COP007", "COP009", "COP011"],
         ),
         # No violation: Variable used multiple times
         ("def fetch_item(values: list[int]) -> int:\n    return values[0]", []),
@@ -304,17 +304,17 @@ def test_naming_validations(input_source: str, expected_output: list[str]) -> No
         # No violation: Single-line assignment with intervening lines
         (
             "def func():\n    a = 1\n    # some things here\n    b = a + 1",
-            [],
+            ["COP005", "COP005", "COP007", "COP009"],
         ),
         # No violation: Multi-line assignment used immediately
         (
             "def func():\n    a = (\n        one_item for one_item\n        in lst\n    )\n    b = a[0]",
-            [],
+            ["COP005", "COP005", "COP007", "COP009"],
         ),
         # No violation: Tuple unpacking assignment
         (
             "def func():\n    a, b = (1, 2)\n    c = a + b",
-            [],
+            ["COP005", "COP007", "COP009"],
         ),
     ],
 )
