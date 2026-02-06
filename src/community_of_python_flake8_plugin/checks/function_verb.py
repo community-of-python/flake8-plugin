@@ -16,7 +16,8 @@ def check_is_ignored_name(identifier: str) -> bool:
 
 def check_is_verb_name(identifier: str) -> bool:
     return any(
-        identifier == one_verb_name or identifier.startswith((f"{one_verb_name}_", f"_{one_verb_name}"))
+        identifier in {one_verb_name, f"_{one_verb_name}", f"__{one_verb_name}"}
+        or identifier.startswith((f"{one_verb_name}_", f"_{one_verb_name}_", f"__{one_verb_name}_"))
         for one_verb_name in VERB_PREFIXES
     )
 

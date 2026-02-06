@@ -76,7 +76,7 @@ class DataclassConfigCheck(ast.NodeVisitor):
             check_inherits_from_bases(ast_node, FINAL_CLASS_EXCLUDED_BASES)
             or is_pydantic_model(ast_node)
             or is_model_factory(ast_node)
-            or self._inherits_from_exception(ast_node)
+            or self._check_inherits_from_exception(ast_node)
         ):
             self.generic_visit(ast_node)
             return
@@ -96,7 +96,7 @@ class DataclassConfigCheck(ast.NodeVisitor):
 
         self.generic_visit(ast_node)
 
-    def _inherits_from_exception(self, ast_node: ast.ClassDef) -> bool:
+    def _check_inherits_from_exception(self, ast_node: ast.ClassDef) -> bool:
         """Check if class inherits from Exception or its subclasses."""
         for one_base in ast_node.bases:
             if isinstance(one_base, ast.Name) and ("Error" in one_base.id or "Exception" in one_base.id):
