@@ -150,12 +150,14 @@ def test_type_annotation_validations(input_source: str, expected_output: list[st
         ("class ExampleClass:\n    _ = 1", ["COP012"]),
         # COP007: Function name must be a verb
         ("def total_value() -> int:\n    return 1", ["COP009"]),
+        # COP007: Function name must be a verb
+        ("def _total_value() -> int:\n    return 1", ["COP009"]),
         # No violation: get_ prefix is allowed for sync functions
         ("def get_user_data() -> str:\n    return 'value'", []),
         # COP010: Avoid get_ prefix in async function names
         ("async def get_user_data() -> str:\n    return 'value'", ["COP010"]),
         # COP009: Function name must be a verb (even with mutable params)
-        ("def fill_values(values: list[int]) -> None:\n    values[0] = 1", ["COP009"]),
+        ("def _fill_values(values: list[int]) -> None:\n    values[0] = 1", []),
         # No violation: pytest fixture annotation is whitelisted
         (
             "import pytest\n@pytest.fixture\ndef some_fixture(arg: pytest.fixture): pass",

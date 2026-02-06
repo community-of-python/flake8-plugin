@@ -11,14 +11,13 @@ from community_of_python_flake8_plugin.violations import Violation
 def check_is_ignored_name(identifier: str) -> bool:
     if identifier == "main":
         return True
-    if identifier.startswith("__") and identifier.endswith("__"):
-        return True
-    return bool(identifier.startswith("_"))
+    return bool(identifier.startswith("__") and identifier.endswith("__"))
 
 
 def check_is_verb_name(identifier: str) -> bool:
     return any(
-        identifier == one_verb_name or identifier.startswith(f"{one_verb_name}_") for one_verb_name in VERB_PREFIXES
+        identifier == one_verb_name or identifier.startswith((f"{one_verb_name}_", f"_{one_verb_name}"))
+        for one_verb_name in VERB_PREFIXES
     )
 
 
