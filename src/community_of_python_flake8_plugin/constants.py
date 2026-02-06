@@ -111,6 +111,7 @@ VERB_PREFIXES: typing.Final = {
     "undo",
     "cache",
     "fill",
+    "import",
 }
 
 SCALAR_ANNOTATIONS: typing.Final = {"int", "str", "float", "bool", "bytes", "complex"}
