@@ -22,14 +22,14 @@ class COP015ForLoopOnePrefixCheck(ast.NodeVisitor):
         # Validate targets in generators (the 'v' in 'for v in lst')
         for one_comprehension in ast_node.generators:
             if not self._is_partial_unpacking(ast_node.elt, one_comprehension.target):
-                self._validate_comprehension_target(one_comprehension.target)
+                self._validate_comprehension_target(one_comprehension.target, one_comprehension.iter)
         self.generic_visit(ast_node)
 
     def visit_SetComp(self, ast_node: ast.SetComp) -> None:
         # Validate targets in generators (the 'v' in 'for v in lst')
         for one_comprehension in ast_node.generators:
             if not self._is_partial_unpacking(ast_node.elt, one_comprehension.target):
-                self._validate_comprehension_target(one_comprehension.target)
+                self._validate_comprehension_target(one_comprehension.target, one_comprehension.iter)
         self.generic_visit(ast_node)
 
     def visit_DictComp(self, ast_node: ast.DictComp) -> None:
@@ -38,7 +38,7 @@ class COP015ForLoopOnePrefixCheck(ast.NodeVisitor):
         # key and value are both used
         for one_comprehension in ast_node.generators:
             if not self._is_partial_unpacking_expr_count(2, one_comprehension.target):
-                self._validate_comprehension_target(one_comprehension.target)
+                self._validate_comprehension_target(one_comprehension.target, one_comprehension.iter)
         self.generic_visit(ast_node)
 
     def visit_For(self, ast_node: ast.For) -> None:
@@ -46,14 +46,14 @@ class COP015ForLoopOnePrefixCheck(ast.NodeVisitor):
         # Apply same unpacking logic as comprehensions
         # For-loops don't have an expression that references vars
         if not self._is_partial_unpacking_expr_count(1, ast_node.target):
-            self._validate_comprehension_target(ast_node.target)
+            self._validate_comprehension_target(ast_node.target, ast_node.iter)
         self.generic_visit(ast_node)
 
     def visit_GeneratorExp(self, ast_node: ast.GeneratorExp) -> None:
         # Validate targets in generators (the 'v' in 'for v in lst')
         for one_comprehension in ast_node.generators:
             if not self._is_partial_unpacking(ast_node.elt, one_comprehension.target):
-                self._validate_comprehension_target(one_comprehension.target)
+                self._validate_comprehension_target(one_comprehension.target, one_comprehension.iter)
         self.generic_visit(ast_node)
 
     def _is_partial_unpacking(self, expression: ast.expr, target_node: ast.expr) -> bool:
@@ -64,6 +64,24 @@ class COP015ForLoopOnePrefixCheck(ast.NodeVisitor):
         """Check if this is partial unpacking given expression variable count."""
         target_count: typing.Final = self._count_unpacked_vars(target_node)
         return target_count > expression_count and target_count > 1
+
+    def _is_literal_range(self, iter_node: ast.expr) -> bool:
+        """Check if the iteration is over a literal range() call."""
+        # Check for direct range() call
+        if isinstance(iter_node, ast.Call):
+            if isinstance(iter_node.func, ast.Name) and iter_node.func.id == "range":
+                # Check if all arguments are literals (no variables)
+                for arg in iter_node.args:
+                    if not isinstance(arg, (ast.Constant, ast.UnaryOp)):
+                        # If any argument is not a literal, this is not a literal range
+                        # Note: UnaryOp is included to handle negative numbers like -1
+                        return False
+                    # For UnaryOp (like -1), check if operand is a literal
+                    if isinstance(arg, ast.UnaryOp):
+                        if not isinstance(arg.operand, ast.Constant):
+                            return False
+                return True
+        return False
 
     def _count_referenced_vars(self, expression: ast.expr) -> int:
         """Count how many variables are referenced in the expression."""
@@ -83,8 +101,12 @@ class COP015ForLoopOnePrefixCheck(ast.NodeVisitor):
             return len([one_element for one_element in target_node.elts if isinstance(one_element, ast.Name)])
         return 0
 
-    def _validate_comprehension_target(self, target_node: ast.expr) -> None:
+    def _validate_comprehension_target(self, target_node: ast.expr, iter_node: ast.expr | None = None) -> None:
         """Validate that comprehension target follows the one_ prefix rule."""
+        # Skip validation if iterating over literal range()
+        if iter_node is not None and self._is_literal_range(iter_node):
+            return
+            
         # Skip ignored targets (underscore, unpacking)
         if _is_ignored_target(target_node):
             return

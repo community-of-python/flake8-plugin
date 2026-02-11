@@ -40,9 +40,24 @@ def is_model_factory_class(class_node: ast.ClassDef) -> bool:
     return check_inherits_from_bases(class_node, {"ModelFactory", "SQLAlchemyFactory"})
 
 
+def has_inherited_classes(syntax_tree: ast.AST, class_node: ast.ClassDef) -> bool:
+    """Check if there are classes that inherit from this class."""
+    for node in ast.walk(syntax_tree):
+        if isinstance(node, ast.ClassDef) and node != class_node:
+            for base in node.bases:
+                # Check for direct class reference: class Child(Parent):
+                if isinstance(base, ast.Name) and base.id == class_node.name:
+                    return True
+                # Check for attributed class reference: class Child(module.Parent):
+                if isinstance(base, ast.Attribute) and base.attr == class_node.name:
+                    return True
+    return False
+
+
 @typing.final
 class FinalClassCheck(ast.NodeVisitor):
-    def __init__(self, syntax_tree: ast.AST) -> None:  # noqa: ARG002
+    def __init__(self, syntax_tree: ast.AST) -> None:
+        self.syntax_tree = syntax_tree
         self.violations: list[Violation] = []
 
     def visit_ClassDef(self, ast_node: ast.ClassDef) -> None:
@@ -52,6 +67,10 @@ class FinalClassCheck(ast.NodeVisitor):
     def _check_final_decorator(self, ast_node: ast.ClassDef) -> None:
         # Skip Protocol classes, test classes, and ModelFactory classes
         if is_protocol_class(ast_node) or ast_node.name.startswith("Test") or is_model_factory_class(ast_node):
+            return
+
+        # If there are classes inheriting from this class, don't require the decorator
+        if has_inherited_classes(self.syntax_tree, ast_node):
             return
 
         if not contains_final_decorator(ast_node):
