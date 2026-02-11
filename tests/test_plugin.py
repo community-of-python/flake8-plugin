@@ -437,28 +437,28 @@ def test_variable_usage_validations(input_source: str, expected_output: list[str
             "class ParentClass:\n    pass\n\nclass ChildClass(module.ParentClass):\n    pass",
             ["COP012"],  # Only ParentClass should require final decorator, ChildClass inherits so it's exempt
         ),
-        # No violation: Parent class with local subclass doesn't require final decorator
+        # No violation: Child class properly inherits, parent doesn't need final decorator
         (
             "import typing\n\n"
-            "@typing.final\nclass ParentClass:\n    pass\n\n"
-            "class ChildClass(ParentClass):\n    pass",
-            [],  # No violations - ParentClass is properly marked final
+            "class ParentClass:\n    pass\n\n"
+            "@typing.final\nclass ChildClass(ParentClass):\n    pass",
+            [],  # No violations - ChildClass is properly marked final
         ),
         # No violation: Complex inheritance hierarchy with proper final decorators
         (
             "import typing\n\n"
-            "@typing.final\nclass BaseClass:\n    pass\n\n"
+            "class BaseClass:\n    pass\n\n"
             "class MiddleClass(BaseClass):\n    pass\n\n"
-            "class DerivedClass(MiddleClass):\n    pass",
-            [],  # No violations - BaseClass is properly marked final
+            "@typing.final\nclass DerivedClass(MiddleClass):\n    pass",
+            [],  # No violations - derived classes are properly marked final
         ),
-        # No violation: Multiple inheritance with local subclasses
+        # No violation: Multiple inheritance with proper final decorators
         (
             "import typing\n\n"
-            "@typing.final\nclass FirstParent:\n    pass\n\n"
-            "@typing.final\nclass SecondParent:\n    pass\n\n"
-            "class ChildClass(FirstParent, SecondParent):\n    pass",
-            [],  # No violations - parent classes are properly marked final
+            "class FirstParent:\n    pass\n\n"
+            "class SecondParent:\n    pass\n\n"
+            "@typing.final\nclass ChildClass(FirstParent, SecondParent):\n    pass",
+            [],  # No violations - ChildClass is properly marked final
         ),
     ],
 )
