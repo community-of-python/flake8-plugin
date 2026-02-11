@@ -40,8 +40,8 @@ def is_model_factory_class(class_node: ast.ClassDef) -> bool:
     return check_inherits_from_bases(class_node, {"ModelFactory", "SQLAlchemyFactory"})
 
 
-def has_inherited_classes(syntax_tree: ast.AST, class_node: ast.ClassDef) -> bool:
-    """Check if there are classes that inherit from this class."""
+def has_local_subclasses(syntax_tree: ast.AST, class_node: ast.ClassDef) -> bool:
+    """Check if there are classes in the same file that inherit from this class."""
     for node in ast.walk(syntax_tree):
         if isinstance(node, ast.ClassDef) and node != class_node:
             for base in node.bases:
@@ -69,8 +69,8 @@ class FinalClassCheck(ast.NodeVisitor):
         if is_protocol_class(ast_node) or ast_node.name.startswith("Test") or is_model_factory_class(ast_node):
             return
 
-        # If there are classes inheriting from this class, don't require the decorator
-        if has_inherited_classes(self.syntax_tree, ast_node):
+        # If there are classes in this file that inherit from this class, don't require the decorator
+        if has_local_subclasses(self.syntax_tree, ast_node):
             return
 
         if not contains_final_decorator(ast_node):
