@@ -422,20 +422,43 @@ def test_variable_usage_validations(input_source: str, expected_output: list[str
             "import typing\nclass MyProtocol(typing.Protocol, object):\n    def fetch_value(self) -> int: ...\n",
             [],
         ),
-        # No violation: Classes with inherited classes don't require @typing.final
+        # No violation: Child classes don't require @typing.final since they inherit from other classes
         (
             "class ParentClass:\n    pass\n\nclass ChildClass(ParentClass):\n    pass",
-            ["COP012"],  # Only ParentClass should require final decorator
+            ["COP012"],  # Only ParentClass should require final decorator, ChildClass inherits so it's exempt
         ),
-        # No violation: Classes with multiple levels of inheritance
+        # No violation: Multiple levels of inheritance
         (
             "class GrandParentClass:\n    pass\n\nclass ParentClass(GrandParentClass):\n    pass\n\nclass ChildClass(ParentClass):\n    pass",
-            ["COP012"],  # Only GrandParentClass should require final decorator
+            ["COP012"],  # Only GrandParentClass requires final decorator, ParentClass and ChildClass inherit so they're exempt
         ),
-        # No violation: Classes with inherited classes using module notation
+        # No violation: Child classes with module notation don't require @typing.final
         (
             "class ParentClass:\n    pass\n\nclass ChildClass(module.ParentClass):\n    pass",
-            ["COP012"],  # Only ParentClass should require final decorator
+            ["COP012"],  # Only ParentClass should require final decorator, ChildClass inherits so it's exempt
+        ),
+        # No violation: Parent class with local subclass doesn't require final decorator
+        (
+            "import typing\n\n"
+            "@typing.final\nclass ParentClass:\n    pass\n\n"
+            "class ChildClass(ParentClass):\n    pass",
+            [],  # No violations - ParentClass is properly marked final
+        ),
+        # No violation: Complex inheritance hierarchy with proper final decorators
+        (
+            "import typing\n\n"
+            "@typing.final\nclass BaseClass:\n    pass\n\n"
+            "class MiddleClass(BaseClass):\n    pass\n\n"
+            "class DerivedClass(MiddleClass):\n    pass",
+            [],  # No violations - BaseClass is properly marked final
+        ),
+        # No violation: Multiple inheritance with local subclasses
+        (
+            "import typing\n\n"
+            "@typing.final\nclass FirstParent:\n    pass\n\n"
+            "@typing.final\nclass SecondParent:\n    pass\n\n"
+            "class ChildClass(FirstParent, SecondParent):\n    pass",
+            [],  # No violations - parent classes are properly marked final
         ),
     ],
 )
@@ -621,27 +644,27 @@ def test_dataclass_validations(input_source: str, expected_output: list[str]) ->
         # No violation: Regular for-loop with one_ prefix
         ("for one_x in some_list: pass", []),
         # No violation: Regular for-loop over literal range() without one_ prefix
-        ("for i in range(10): pass", []),
+        ("for cur_number in range(10): pass", []),
         # No violation: Regular for-loop over literal range() with start and stop
-        ("for i in range(5, 10): pass", []),
+        ("for cur_number in range(5, 10): pass", []),
         # No violation: Regular for-loop over literal range() with start, stop, and step
-        ("for i in range(0, 10, 2): pass", []),
+        ("for cur_number in range(0, 10, 2): pass", []),
         # No violation: Regular for-loop over literal range() with negative values
-        ("for i in range(-5, 5): pass", []),
+        ("for cur_number in range(-5, 5): pass", []),
         # COP015: Regular for-loop over non-literal range() should still require one_ prefix
-        ("for i in range(some_variable): pass", ["COP015"]),
+        ("for cur_number in range(some_variable): pass", ["COP015"]),
         # COP015: Regular for-loop over non-literal range() with multiple variables should still require one_ prefix
-        ("for i in range(start, stop): pass", ["COP015"]),
+        ("for cur_number in range(start, stop): pass", ["COP015"]),
         # No violation: List comprehension over literal range() without one_ prefix
-        ("result = [i for i in range(10)]", []),
+        ("my_result = [cur_number for cur_number in range(10)]", []),
         # COP015: List comprehension over non-literal range() should still require one_ prefix
-        ("result = [i for i in range(variable)]", ["COP015"]),
+        ("my_result = [cur_number for cur_number in range(variable)]", ["COP015"]),
         # No violation: Set comprehension over literal range() without one_ prefix
-        ("result = {i for i in range(10)}", []),
+        ("my_result = {cur_number for cur_number in range(10)}", []),
         # No violation: Dict comprehension over literal range() without one_ prefix
-        ("result = {i: i for i in range(10)}", []),
+        ("my_result = {cur_number: cur_number for cur_number in range(10)}", []),
         # No violation: Generator expression over literal range() without one_ prefix
-        ("result = (i for i in range(10))", []),
+        ("my_result = (cur_number for cur_number in range(10))", []),
     ],
 )
 def test_module_vs_class_level_assignments(input_source: str, expected_output: list[str]) -> None:
