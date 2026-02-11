@@ -429,8 +429,10 @@ def test_variable_usage_validations(input_source: str, expected_output: list[str
         ),
         # No violation: Multiple levels of inheritance
         (
-            "class GrandParentClass:\n    pass\n\nclass ParentClass(GrandParentClass):\n    pass\n\nclass ChildClass(ParentClass):\n    pass",
-            ["COP012"],  # Only GrandParentClass requires final decorator, ParentClass and ChildClass inherit so they're exempt
+            "class GrandParentClass:\n    pass\n\nclass ParentClass(GrandParentClass):\n    pass\n\n"
+            "class ChildClass(ParentClass):\n    pass",
+            ["COP012"],  # Only GrandParentClass requires final decorator, ParentClass and
+            # ChildClass inherit so they're exempt
         ),
         # No violation: Child classes with module notation don't require @typing.final
         (
@@ -439,9 +441,7 @@ def test_variable_usage_validations(input_source: str, expected_output: list[str
         ),
         # No violation: Child class properly inherits, parent doesn't need final decorator
         (
-            "import typing\n\n"
-            "class ParentClass:\n    pass\n\n"
-            "@typing.final\nclass ChildClass(ParentClass):\n    pass",
+            "import typing\n\nclass ParentClass:\n    pass\n\n@typing.final\nclass ChildClass(ParentClass):\n    pass",
             [],  # No violations - ChildClass is properly marked final
         ),
         # No violation: Complex inheritance hierarchy with proper final decorators

@@ -68,19 +68,17 @@ class COP015ForLoopOnePrefixCheck(ast.NodeVisitor):
     def _is_literal_range(self, iter_node: ast.expr) -> bool:
         """Check if the iteration is over a literal range() call."""
         # Check for direct range() call
-        if isinstance(iter_node, ast.Call):
-            if isinstance(iter_node.func, ast.Name) and iter_node.func.id == "range":
-                # Check if all arguments are literals (no variables)
-                for arg in iter_node.args:
-                    if not isinstance(arg, (ast.Constant, ast.UnaryOp)):
-                        # If any argument is not a literal, this is not a literal range
-                        # Note: UnaryOp is included to handle negative numbers like -1
-                        return False
-                    # For UnaryOp (like -1), check if operand is a literal
-                    if isinstance(arg, ast.UnaryOp):
-                        if not isinstance(arg.operand, ast.Constant):
-                            return False
-                return True
+        if isinstance(iter_node, ast.Call) and isinstance(iter_node.func, ast.Name) and iter_node.func.id == "range":
+            # Check if all arguments are literals (no variables)
+            for one_arg in iter_node.args:
+                if not isinstance(one_arg, (ast.Constant, ast.UnaryOp)):
+                    # If any argument is not a literal, this is not a literal range
+                    # Note: UnaryOp is included to handle negative numbers like -1
+                    return False
+                # For UnaryOp (like -1), check if operand is a literal
+                if isinstance(one_arg, ast.UnaryOp) and not isinstance(one_arg.operand, ast.Constant):
+                    return False
+            return True
         return False
 
     def _count_referenced_vars(self, expression: ast.expr) -> int:
@@ -106,7 +104,7 @@ class COP015ForLoopOnePrefixCheck(ast.NodeVisitor):
         # Skip validation if iterating over literal range()
         if iter_node is not None and self._is_literal_range(iter_node):
             return
-            
+
         # Skip ignored targets (underscore, unpacking)
         if _is_ignored_target(target_node):
             return

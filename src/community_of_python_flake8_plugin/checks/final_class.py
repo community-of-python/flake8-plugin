@@ -42,14 +42,14 @@ def is_model_factory_class(class_node: ast.ClassDef) -> bool:
 
 def has_local_subclasses(syntax_tree: ast.AST, class_node: ast.ClassDef) -> bool:
     """Check if there are classes in the same file that inherit from this class."""
-    for node in ast.walk(syntax_tree):
-        if isinstance(node, ast.ClassDef) and node != class_node:
-            for base in node.bases:
+    for one_node in ast.walk(syntax_tree):
+        if isinstance(one_node, ast.ClassDef) and one_node != class_node:
+            for one_base in one_node.bases:
                 # Check for direct class reference: class Child(Parent):
-                if isinstance(base, ast.Name) and base.id == class_node.name:
+                if isinstance(one_base, ast.Name) and one_base.id == class_node.name:
                     return True
                 # Check for attributed class reference: class Child(module.Parent):
-                if isinstance(base, ast.Attribute) and base.attr == class_node.name:
+                if isinstance(one_base, ast.Attribute) and one_base.attr == class_node.name:
                     return True
     return False
 
