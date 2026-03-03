@@ -124,6 +124,7 @@ VERB_PREFIXES: typing.Final = {
     "synchronize",
     "count",
     "summarize",
+    "fix",
 }
 
 SCALAR_ANNOTATIONS: typing.Final = {"int", "str", "float", "bool", "bytes", "complex"}
