@@ -57,7 +57,7 @@ class COP004NameLengthCheck(ast.NodeVisitor):
     def visit_AnnAssign(self, ast_node: ast.AnnAssign) -> None:
         if isinstance(ast_node.target, ast.Name):
             self.validate_name_length(
-                ast_node.target.id, ast_node, find_parent_class_definition(self.syntax_tree, ast_node)
+                ast_node.target.id, ast_node, parent_class=find_parent_class_definition(self.syntax_tree, ast_node)
             )
         self.generic_visit(ast_node)
 
@@ -65,7 +65,7 @@ class COP004NameLengthCheck(ast.NodeVisitor):
         for one_target in ast_node.targets:
             if isinstance(one_target, ast.Name):
                 self.validate_name_length(
-                    one_target.id, ast_node, find_parent_class_definition(self.syntax_tree, ast_node)
+                    one_target.id, ast_node, parent_class=find_parent_class_definition(self.syntax_tree, ast_node)
                 )
         self.generic_visit(ast_node)
 
@@ -197,7 +197,7 @@ class COP004NameLengthCheck(ast.NodeVisitor):
                 )
             )
 
-    def validate_name_length(self, identifier: str, ast_node: ast.stmt, parent_class: ast.ClassDef | None) -> None:
+    def validate_name_length(self, identifier: str, ast_node: ast.stmt, *, parent_class: ast.ClassDef | None) -> None:
         if check_is_ignored_name(identifier):
             return
 

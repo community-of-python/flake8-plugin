@@ -679,6 +679,73 @@ def test_module_vs_class_level_assignments(input_source: str, expected_output: l
 @pytest.mark.parametrize(
     ("input_source", "expected_output"),
     [
+        (
+            "def fetch_records(user_identifier: int, organization_identifier: int, record_limit: int) -> None:\n"
+            "    pass",
+            ["COP016"],
+        ),
+        (
+            "def fetch_records(user_identifier: int, organization_identifier: int, *, record_limit: int) -> None:\n"
+            "    pass",
+            [],
+        ),
+        (
+            "def fetch_records(user_identifier: int, organization_identifier: int, record_limit: int, *, "
+            "sort_order: str) -> None:\n"
+            "    pass",
+            [],
+        ),
+        (
+            "def fetch_records(user_identifier: int, organization_identifier: int, /, record_limit: int) -> None:\n"
+            "    pass",
+            [],
+        ),
+        (
+            "def fetch_records(first_argument: int, second_argument: int, third_argument: int, "
+            "**extra_values: int) -> None:\n"
+            "    pass",
+            ["COP016"],
+        ),
+        (
+            "def fetch_records(self, user_identifier: int, organization_identifier: int, record_limit: int) -> None:\n"
+            "    pass",
+            ["COP016"],
+        ),
+        (
+            "async def fetch_records(user_identifier: int, organization_identifier: int, record_limit: int) -> None:\n"
+            "    pass",
+            ["COP016"],
+        ),
+        (
+            "process_value = lambda first_argument, second_argument, third_argument: first_argument",
+            ["COP016"],
+        ),
+        (
+            "process_value = lambda first_argument, second_argument, *, third_argument: third_argument",
+            [],
+        ),
+        (
+            "fetch_records(first_value, second_value, third_value)",
+            [],
+        ),
+        (
+            "def __exit__(self, exception_type, exception_value, traceback_value):\n    pass",
+            [],
+        ),
+    ],
+)
+def test_function_keyword_only_args_validations(input_source: str, expected_output: list[str]) -> None:
+    assert sorted(
+        [
+            one_violation_item[2].split(" ")[0]
+            for one_violation_item in CommunityOfPythonFlake8Plugin(ast.parse(input_source)).run()
+        ]  # noqa: COP011
+    ) == sorted(expected_output)
+
+
+@pytest.mark.parametrize(
+    ("input_source", "expected_output"),
+    [
         # Combined case: MyClass (short name), calc (short name), MyClass (not final)
         (
             "import functools\nclass MyClass:\n    @functools.cached_property\n    def calc(): pass",

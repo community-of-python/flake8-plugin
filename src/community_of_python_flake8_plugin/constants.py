@@ -104,6 +104,7 @@ VERB_PREFIXES: typing.Final = {
     "call",
     "filter",
     "apply",
+    "append",
     "measure",
     "ensure",
     "submit",

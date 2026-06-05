@@ -20,6 +20,8 @@ This plugin implements the following code style checks:
 - **COP012**: Classes should be marked `typing.final`
 - **COP013**: Wrap module dictionaries with `types.MappingProxyType`
 - **COP014**: Use dataclasses with `kw_only=True`, `slots=True`, `frozen=True`
+- **COP015**: For-loop variables must be prefixed with `one_`
+- **COP016**: Add `*` or `/` when defining more than two regular arguments
 
 ## Installation
 
