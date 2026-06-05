@@ -37,7 +37,7 @@ def check_inherits_from_bases(class_definition: ast.ClassDef, base_classes: set[
     return False
 
 
-def find_parent_node(syntax_tree: ast.AST, target_node: ast.AST, node_types: tuple[type, ...]) -> ast.AST | None:
+def find_parent_node(syntax_tree: ast.AST, target_node: ast.AST, *, node_types: tuple[type, ...]) -> ast.AST | None:
     for one_potential_parent in ast.walk(syntax_tree):
         if isinstance(one_potential_parent, node_types):
             for one_child_node in ast.walk(one_potential_parent):

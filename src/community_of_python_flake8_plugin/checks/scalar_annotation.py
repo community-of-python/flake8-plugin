@@ -45,7 +45,8 @@ class ScalarAnnotationCheck(ast.NodeVisitor):
     def visit_AnnAssign(self, ast_node: ast.AnnAssign) -> None:
         if isinstance(ast_node.target, ast.Name) and (
             find_parent_class_definition(self.syntax_tree, ast_node) is None
-            or find_parent_node(self.syntax_tree, ast_node, (ast.FunctionDef, ast.AsyncFunctionDef)) is not None
+            or find_parent_node(self.syntax_tree, ast_node, node_types=(ast.FunctionDef, ast.AsyncFunctionDef))
+            is not None
         ):
             self.validate_scalar_annotation(ast_node)
         self.generic_visit(ast_node)

@@ -54,3 +54,8 @@ class ViolationCodes:
     FOR_LOOP_VARIABLE_PREFIX = ViolationCodeItem(
         code="COP015", description="For-loop variables must be prefixed with 'one_'"
     )
+
+    # Function argument violations
+    FUNCTION_KEYWORD_ONLY_ARGS = ViolationCodeItem(
+        code="COP016", description="Add * or / when defining more than two regular arguments"
+    )
