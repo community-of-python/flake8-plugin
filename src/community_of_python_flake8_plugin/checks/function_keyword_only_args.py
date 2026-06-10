@@ -14,6 +14,26 @@ def check_is_dunder_name(identifier: str) -> bool:
     return bool(identifier.startswith("__") and identifier.endswith("__"))
 
 
+def check_is_pytest_fixture_decorator(decorator: ast.expr) -> bool:
+    if isinstance(decorator, ast.Attribute):
+        return decorator.attr == "fixture" and isinstance(decorator.value, ast.Name) and decorator.value.id == "pytest"
+    if isinstance(decorator, ast.Call) and isinstance(decorator.func, ast.Attribute):
+        return (
+            decorator.func.attr == "fixture"
+            and isinstance(decorator.func.value, ast.Name)
+            and decorator.func.value.id == "pytest"
+        )
+    return False
+
+
+def check_is_ignored_function_definition(ast_node: ast.FunctionDef | ast.AsyncFunctionDef) -> bool:
+    return (
+        check_is_dunder_name(ast_node.name)
+        or ast_node.name.startswith("test_")
+        or any(check_is_pytest_fixture_decorator(one_decorator) for one_decorator in ast_node.decorator_list)  # noqa: COP011
+    )
+
+
 def get_positional_arguments(arguments_node: ast.arguments) -> list[ast.arg]:
     positional_arguments: typing.Final = [*arguments_node.posonlyargs, *arguments_node.args]
     if positional_arguments and positional_arguments[0].arg in IGNORED_BOUND_ARGUMENT_NAMES:
@@ -44,7 +64,7 @@ class COP016FunctionKeywordOnlyArgsCheck(ast.NodeVisitor):
         self.generic_visit(ast_node)
 
     def validate_function_definition(self, ast_node: ast.FunctionDef | ast.AsyncFunctionDef) -> None:
-        if check_is_dunder_name(ast_node.name):
+        if check_is_ignored_function_definition(ast_node):
             return
         self.validate_arguments(ast_node.args, ast_node)
 

@@ -732,6 +732,23 @@ def test_module_vs_class_level_assignments(input_source: str, expected_output: l
             "def __exit__(self, exception_type, exception_value, traceback_value):\n    pass",
             [],
         ),
+        (
+            "def test_fetch_records(user_identifier: int, organization_identifier: int, record_limit: int) -> None:\n"
+            "    pass",
+            [],
+        ),
+        (
+            "@pytest.fixture\n"
+            "def fetch_records(user_identifier: int, organization_identifier: int, record_limit: int) -> None:\n"
+            "    pass",
+            [],
+        ),
+        (
+            "@pytest.fixture(name='records')\n"
+            "def fetch_records(user_identifier: int, organization_identifier: int, record_limit: int) -> None:\n"
+            "    pass",
+            [],
+        ),
     ],
 )
 def test_function_keyword_only_args_validations(input_source: str, expected_output: list[str]) -> None:
