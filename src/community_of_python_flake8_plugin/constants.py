@@ -128,6 +128,8 @@ VERB_PREFIXES: typing.Final = {
     "fix",
     "classify",
     "try",
+    "download",
+    "post",
 }
 
 SCALAR_ANNOTATIONS: typing.Final = {"int", "str", "float", "bool", "bytes", "complex"}
