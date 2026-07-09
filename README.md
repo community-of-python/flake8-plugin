@@ -22,6 +22,21 @@ This plugin implements the following code style checks:
 - **COP014**: Use dataclasses with `kw_only=True`, `slots=True`, `frozen=True`
 - **COP015**: For-loop variables must be prefixed with `one_`
 - **COP016**: Add `*` or `/` when defining more than two regular arguments
+- **COP017**: Avoid reassigning variables
+
+### COP017: immutable variables by default
+
+Variables are treated as immutable: reassigning a name with `=` in the same scope is a violation. When reassignment is intended, allow it explicitly with `# noqa: COP017` on the reassignment line:
+
+```python
+counter_value = 0
+counter_value = compute_next(counter_value)  # noqa: COP017
+
+total_value = 0
+total_value = compute_next(total_value)  # COP017
+```
+
+Augmented assignments (`+=`), for-loop variables, attribute and subscript targets, and names declared `global`/`nonlocal` are not checked.
 
 ## Installation
 
