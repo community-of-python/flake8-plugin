@@ -1,5 +1,6 @@
 from __future__ import annotations
 import ast
+import dataclasses
 import sys
 import typing
 from importlib import util as importlib_util
@@ -21,9 +22,10 @@ def check_is_stdlib_package(module_name: str) -> bool:
 
 
 @typing.final
+@dataclasses.dataclass(kw_only=True, slots=True, frozen=True)
 class COP002StdlibImportCheck(ast.NodeVisitor):
-    def __init__(self, syntax_tree: ast.AST) -> None:  # noqa: ARG002
-        self.violations: list[Violation] = []
+    syntax_tree: ast.AST
+    violations: list[Violation] = dataclasses.field(default_factory=list)
 
     def visit_ImportFrom(self, ast_node: ast.ImportFrom) -> None:
         if ast_node.module and ast_node.level == 0 and ast_node.module not in ALLOWED_STDLIB_FROM_IMPORTS:

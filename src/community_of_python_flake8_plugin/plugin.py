@@ -18,7 +18,7 @@ if typing.TYPE_CHECKING:
 class PluginCheckProtocol(typing.Protocol):
     violations: list[Violation]
 
-    def __init__(self, tree: ast.AST) -> None: ...  # noqa: COP006
+    def __init__(self, *, syntax_tree: ast.AST) -> None: ...
     def visit(self, node: ast.AST) -> None: ...  # noqa: COP007,COP006,COP012
 
 
@@ -48,7 +48,7 @@ class CommunityOfPythonFlake8Plugin:
             for one_attribute_name in dir(imported_module):
                 attribute = getattr(imported_module, one_attribute_name)
                 if isinstance(attribute, type) and one_attribute_name.endswith("Check") and hasattr(attribute, "visit"):
-                    check_instance = attribute(self.ast_syntax_tree)
+                    check_instance = attribute(syntax_tree=self.ast_syntax_tree)
                     check_instance.visit(self.ast_syntax_tree)
                     checks_collection.append(check_instance)
         return checks_collection

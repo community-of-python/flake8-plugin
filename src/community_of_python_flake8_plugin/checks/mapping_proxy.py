@@ -1,5 +1,6 @@
 from __future__ import annotations
 import ast
+import dataclasses
 import typing
 
 from community_of_python_flake8_plugin.constants import MAPPING_PROXY_TYPES
@@ -60,9 +61,10 @@ def _get_assignment_targets(ast_node: ast.Assign | ast.AnnAssign) -> list[ast.ex
 
 
 @typing.final
+@dataclasses.dataclass(kw_only=True, slots=True, frozen=True)
 class MappingProxyCheck(ast.NodeVisitor):
-    def __init__(self, syntax_tree: ast.AST) -> None:  # noqa: ARG002
-        self.violations: list[Violation] = []
+    syntax_tree: ast.AST
+    violations: list[Violation] = dataclasses.field(default_factory=list)
 
     def visit_Module(self, ast_node: ast.Module) -> None:
         for one_statement in ast_node.body:

@@ -11,7 +11,7 @@ else:
 
     @typing.final
     class _MutableMarker:
-        def __getitem__(self, item_value: object) -> object:
+        def __getitem__(self, item_value: _ValueType) -> _ValueType:
             return item_value
 
     Mutable = _MutableMarker()  # noqa: COP005,COP017

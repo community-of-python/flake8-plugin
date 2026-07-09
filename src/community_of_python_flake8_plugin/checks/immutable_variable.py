@@ -1,5 +1,6 @@
 from __future__ import annotations
 import ast
+import dataclasses
 import typing
 
 from community_of_python_flake8_plugin.violation_codes import ViolationCodes
@@ -7,7 +8,7 @@ from community_of_python_flake8_plugin.violations import Violation
 
 
 if typing.TYPE_CHECKING:
-    from collections.abc import Iterable
+    from collections.abc import Iterable, Sequence
 
 
 MUTABLE_ANNOTATION_NAME: typing.Final = "Mutable"
@@ -34,7 +35,7 @@ def extract_assigned_names(target_node: ast.expr) -> Iterable[str]:
         yield from extract_assigned_names(target_node.value)
 
 
-def iter_scope_child_nodes(scope_body: list[ast.stmt]) -> Iterable[ast.AST]:
+def iter_scope_child_nodes(scope_body: Iterable[ast.stmt]) -> Iterable[ast.AST]:
     for one_statement in scope_body:
         yield from iter_same_scope_nodes(one_statement)
 
@@ -48,10 +49,10 @@ def iter_same_scope_nodes(ast_node: ast.AST) -> Iterable[ast.AST]:
 
 
 @typing.final
+@dataclasses.dataclass(kw_only=True, slots=True, frozen=True)
 class COP017ImmutableVariableCheck(ast.NodeVisitor):
-    def __init__(self, syntax_tree: ast.AST) -> None:
-        self.violations: list[Violation] = []
-        self.syntax_tree: typing.Final[ast.AST] = syntax_tree
+    syntax_tree: ast.AST
+    violations: list[Violation] = dataclasses.field(default_factory=list)
 
     def visit_Module(self, ast_node: ast.Module) -> None:
         self.validate_scope(ast_node.body)
@@ -69,7 +70,7 @@ class COP017ImmutableVariableCheck(ast.NodeVisitor):
         self.validate_scope(ast_node.body)
         self.generic_visit(ast_node)
 
-    def validate_scope(self, scope_body: list[ast.stmt]) -> None:
+    def validate_scope(self, scope_body: Sequence[ast.stmt]) -> None:
         skipped_names: typing.Final = self.collect_outer_scope_names(scope_body)
         mutable_flag_by_name: typing.Final[dict[str, bool]] = {}
         for one_scope_node in iter_scope_child_nodes(scope_body):
@@ -82,7 +83,7 @@ class COP017ImmutableVariableCheck(ast.NodeVisitor):
                     one_scope_node, skipped_names=skipped_names, mutable_flag_by_name=mutable_flag_by_name
                 )
 
-    def collect_outer_scope_names(self, scope_body: list[ast.stmt]) -> set[str]:
+    def collect_outer_scope_names(self, scope_body: Iterable[ast.stmt]) -> set[str]:
         outer_scope_names: typing.Final[set[str]] = set()
         for one_scope_node in iter_scope_child_nodes(scope_body):
             if isinstance(one_scope_node, (ast.Global, ast.Nonlocal)):

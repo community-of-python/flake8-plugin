@@ -1,5 +1,6 @@
 from __future__ import annotations
 import ast
+import dataclasses
 import typing
 
 from community_of_python_flake8_plugin.constants import FINAL_CLASS_EXCLUDED_BASES, VERB_PREFIXES
@@ -79,10 +80,10 @@ def check_is_fixture_decorator(decorator: ast.expr) -> bool:
 
 
 @typing.final
+@dataclasses.dataclass(kw_only=True, slots=True, frozen=True)
 class FunctionVerbCheck(ast.NodeVisitor):
-    def __init__(self, syntax_tree: ast.AST) -> None:
-        self.violations: list[Violation] = []
-        self.syntax_tree: typing.Final[ast.AST] = syntax_tree
+    syntax_tree: ast.AST
+    violations: list[Violation] = dataclasses.field(default_factory=list)
 
     def visit_FunctionDef(self, ast_node: ast.FunctionDef) -> None:
         self.validate_function_name(ast_node, find_parent_class_definition(self.syntax_tree, ast_node))

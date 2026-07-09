@@ -1,5 +1,6 @@
 from __future__ import annotations
 import ast
+import dataclasses
 import typing
 from collections import defaultdict
 
@@ -93,9 +94,10 @@ def is_used_in_next_line(assign_node: ast.Assign | ast.AnnAssign, usage_nodes: l
 
 
 @typing.final
+@dataclasses.dataclass(kw_only=True, slots=True, frozen=True)
 class TempVarCheck(ast.NodeVisitor):
-    def __init__(self, syntax_tree: ast.AST) -> None:  # noqa: ARG002
-        self.violations: list[Violation] = []
+    syntax_tree: ast.AST
+    violations: list[Violation] = dataclasses.field(default_factory=list)
 
     def visit_FunctionDef(self, ast_node: ast.FunctionDef) -> None:
         self._check_temporary_variables(ast_node)
