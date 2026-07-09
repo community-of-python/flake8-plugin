@@ -2,6 +2,8 @@ from __future__ import annotations
 import typing
 
 
+__all__ = ["Mutable"]
+
 _ValueType = typing.TypeVar("_ValueType")
 
 if typing.TYPE_CHECKING:

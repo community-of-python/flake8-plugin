@@ -65,6 +65,6 @@ class ViolationCodes:
         code="COP017",
         description=(
             "Avoid reassigning variables. If reassignment is intended, annotate the first binding: "
-            "`from community_of_python_flake8_plugin import Mutable` and `name: Mutable[T] = ...`"
+            "`from cop_extensions import Mutable` and `name: Mutable[T] = ...`"
         ),
     )

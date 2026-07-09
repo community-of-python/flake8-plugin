@@ -3,7 +3,7 @@ import ast
 
 import pytest
 
-import community_of_python_flake8_plugin
+import cop_extensions
 from community_of_python_flake8_plugin.plugin import CommunityOfPythonFlake8Plugin
 
 
@@ -873,5 +873,5 @@ def test_immutable_variable_validations(input_source: str, expected_output: list
 
 
 def test_mutable_marker_runtime() -> None:
-    assert community_of_python_flake8_plugin.Mutable is not None
-    assert community_of_python_flake8_plugin.Mutable[int] is int
+    assert cop_extensions.Mutable is not None
+    assert cop_extensions.Mutable[int] is int

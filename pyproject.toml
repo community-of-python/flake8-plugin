@@ -31,6 +31,9 @@ dev = [
 requires = ["uv_build"]
 build-backend = "uv_build"
 
+[tool.uv.build-backend]
+module-name = ["community_of_python_flake8_plugin", "cop_extensions"]
+
 [tool.ruff]
 fix = true
 unsafe-fixes = true

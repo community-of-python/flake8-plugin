@@ -29,7 +29,7 @@ This plugin implements the following code style checks:
 Variables are treated as immutable: reassigning a name with `=` in the same scope is a violation. When reassignment is intended, allow it explicitly with the `Mutable` annotation on the first binding:
 
 ```python
-from community_of_python_flake8_plugin import Mutable
+from cop_extensions import Mutable
 
 counter_value: Mutable[int] = 0
 counter_value = compute_next(counter_value)  # OK
@@ -38,7 +38,7 @@ total_value = 0
 total_value = compute_next(total_value)  # COP017
 ```
 
-The package has no runtime dependencies, so importing `Mutable` in production code does not pull in flake8. `Mutable` is matched by name, so any import source works (e.g. an in-house `typing_extensions.Mutable`). Augmented assignments (`+=`), for-loop variables, attribute and subscript targets, and names declared `global`/`nonlocal` are not checked.
+The `cop_extensions` package ships with the plugin distribution and has no runtime dependencies, so importing `Mutable` in production code does not pull in flake8. `Mutable` is matched by name, so any import source works (e.g. an in-house `typing_extensions.Mutable`). Augmented assignments (`+=`), for-loop variables, attribute and subscript targets, and names declared `global`/`nonlocal` are not checked.
 
 ## Installation
 
@@ -54,7 +54,7 @@ Or install via pip:
 pip install "community-of-python-flake8-plugin[flake8]"
 ```
 
-To use the `Mutable` marker in production code, add the package without the extra — it has no runtime dependencies:
+To use the `cop_extensions.Mutable` marker in production code, add the package without the extra — it has no runtime dependencies:
 
 ```bash
 uv add community-of-python-flake8-plugin
