@@ -61,4 +61,10 @@ class ViolationCodes:
     )
 
     # Variable mutability violations
-    IMMUTABLE_VARIABLE = ViolationCodeItem(code="COP017", description="Avoid reassigning variables")
+    IMMUTABLE_VARIABLE = ViolationCodeItem(
+        code="COP017",
+        description=(
+            "Avoid reassigning variables. If reassignment is intended, annotate the first binding: "
+            "`from community_of_python_flake8_plugin import Mutable` and `name: Mutable[T] = ...`"
+        ),
+    )

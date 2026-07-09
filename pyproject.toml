@@ -5,7 +5,10 @@ description = "Community of Python flake8 plugin"
 readme = "README.md"
 authors = [{ name = "Lev Vereshchagin", email = "mail@vrslev.com" }]
 requires-python = ">=3.10"
-dependencies = ["flake8"]
+dependencies = []
+
+[project.optional-dependencies]
+flake8 = ["flake8"]
 
 [project.entry-points."flake8.extension"]
 COP = "community_of_python_flake8_plugin.plugin:CommunityOfPythonFlake8Plugin"
@@ -15,6 +18,7 @@ addopts = "--cov"
 
 [dependency-groups]
 dev = [
+    "flake8",
     "mypy",
     "ruff",
     "auto-typing-final",
