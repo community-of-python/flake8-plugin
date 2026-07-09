@@ -63,9 +63,9 @@ class COP017ImmutableVariableCheck(ast.NodeVisitor):
         bound_names: typing.Final[set[str]] = set()
         for one_scope_node in iter_scope_child_nodes(scope_body):
             if isinstance(one_scope_node, ast.Assign):
-                self.validate_assignment(one_scope_node, skipped_names, bound_names)
+                self.validate_assignment(one_scope_node, skipped_names=skipped_names, bound_names=bound_names)
             elif isinstance(one_scope_node, ast.AnnAssign):
-                self.validate_annotated_assignment(one_scope_node, skipped_names, bound_names)
+                self.validate_annotated_assignment(one_scope_node, skipped_names=skipped_names, bound_names=bound_names)
 
     def collect_outer_scope_names(self, scope_body: list[ast.stmt]) -> set[str]:
         outer_scope_names: typing.Final[set[str]] = set()
@@ -74,7 +74,7 @@ class COP017ImmutableVariableCheck(ast.NodeVisitor):
                 outer_scope_names.update(one_scope_node.names)
         return outer_scope_names
 
-    def validate_assignment(self, ast_node: ast.Assign, skipped_names: set[str], bound_names: set[str]) -> None:
+    def validate_assignment(self, ast_node: ast.Assign, *, skipped_names: set[str], bound_names: set[str]) -> None:
         for one_target in ast_node.targets:
             for one_assigned_name in extract_assigned_names(one_target):
                 if one_assigned_name in skipped_names:
@@ -85,7 +85,7 @@ class COP017ImmutableVariableCheck(ast.NodeVisitor):
                     bound_names.add(one_assigned_name)
 
     def validate_annotated_assignment(
-        self, ast_node: ast.AnnAssign, skipped_names: set[str], bound_names: set[str]
+        self, ast_node: ast.AnnAssign, *, skipped_names: set[str], bound_names: set[str]
     ) -> None:
         if not isinstance(ast_node.target, ast.Name):
             return

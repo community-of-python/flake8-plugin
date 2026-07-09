@@ -37,32 +37,26 @@ def is_dict_type_annotation(annotation: ast.expr | None) -> bool:
 
     Returns False for TypedDict and other non-dict annotations.
     """
-    is_dict_annotation = False
+    # Handle simple name annotations like 'dict'
+    if isinstance(annotation, ast.Name):
+        return annotation.id == "dict"
+    # Handle attribute annotations like 'typing.Final'
+    if isinstance(annotation, ast.Attribute):
+        return annotation.attr == "dict"
+    # Handle subscript annotations like 'dict[str, int]' or 'Final[dict]'
+    if isinstance(annotation, ast.Subscript):
+        base_name: typing.Final = _get_base_name(annotation.value)
+        # Extract the inner type from Final[inner_type]
+        if base_name == "Final":
+            return is_dict_type_annotation(annotation.slice)
+        return base_name == "dict"
+    return False
 
-    if annotation is not None:
-        # Handle simple name annotations like 'dict'
-        if isinstance(annotation, ast.Name):
-            is_dict_annotation = annotation.id == "dict"
-        # Handle attribute annotations like 'typing.Final'
-        elif isinstance(annotation, ast.Attribute):
-            is_dict_annotation = annotation.attr == "dict"
-        # Handle subscript annotations like 'dict[str, int]' or 'Final[dict]'
-        elif isinstance(annotation, ast.Subscript):
-            base_name: typing.Final = _get_base_name(annotation.value)
-            if base_name:
-                # Check for Final[...] annotations
-                if base_name == "Final":
-                    # Extract the inner type from Final[inner_type]
-                    inner_type = annotation.slice
-                    # Handle Python 3.8 vs 3.9+ differences
-                    if hasattr(inner_type, "value"):  # Python 3.8
-                        inner_type = inner_type.value
-                    is_dict_annotation = is_dict_type_annotation(inner_type)
-                # Check for dict[...] annotations
-                elif base_name == "dict":
-                    is_dict_annotation = True
 
-    return is_dict_annotation
+def _get_assignment_targets(ast_node: ast.Assign | ast.AnnAssign) -> list[ast.expr]:
+    if isinstance(ast_node, ast.Assign):
+        return ast_node.targets
+    return [ast_node.target] if ast_node.value is not None else []
 
 
 @typing.final
@@ -86,15 +80,8 @@ class MappingProxyCheck(ast.NodeVisitor):
             return
 
         # Check for dictionary literals assigned to module-level variables
-        assigned_value: ast.expr | None
-        assignment_targets: list[ast.expr]
-
-        if isinstance(ast_node, ast.Assign):
-            assigned_value = ast_node.value
-            assignment_targets = ast_node.targets
-        else:  # ast.AnnAssign
-            assigned_value = ast_node.value
-            assignment_targets = [ast_node.target] if ast_node.value is not None else []
+        assigned_value: typing.Final = ast_node.value
+        assignment_targets: typing.Final = _get_assignment_targets(ast_node)
 
         # Only check module-level assignments (no parent function/class)
         if assigned_value is not None and isinstance(assigned_value, ast.Dict) and assignment_targets:
