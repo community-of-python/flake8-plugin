@@ -3,6 +3,7 @@ import ast
 
 import pytest
 
+import cop_extensions
 from community_of_python_flake8_plugin.plugin import CommunityOfPythonFlake8Plugin
 
 
@@ -777,3 +778,100 @@ def test_combined_validations(input_source: str, expected_output: list[str]) -> 
             for one_violation_item in CommunityOfPythonFlake8Plugin(ast.parse(input_source)).run()
         ]  # noqa: COP011
     ) == sorted(expected_output)
+
+
+@pytest.mark.parametrize(
+    ("input_source", "expected_output"),
+    [
+        # Reassignment without Mutable annotation
+        ("counter_value = compute_value()\ncounter_value = compute_other()", ["COP017"]),
+        # Every extra reassignment is reported separately
+        (
+            "counter_value = compute_value()\ncounter_value = compute_other()\ncounter_value = compute_third()",
+            ["COP017", "COP017"],
+        ),
+        # Bare Mutable annotation allows reassignment
+        ("counter_value: Mutable = compute_value()\ncounter_value = compute_other()", []),
+        # Subscripted Mutable annotation allows reassignment
+        ("counter_value: Mutable[int] = compute_value()\ncounter_value = compute_other()", []),
+        # Attribute access form of Mutable
+        ("counter_value: typing_extensions.Mutable[int] = compute_value()\ncounter_value = compute_other()", []),
+        # Bare Mutable declaration without value allows later reassignments
+        (
+            "counter_value: Mutable\ncounter_value = compute_value()\ncounter_value = compute_other()",
+            [],
+        ),
+        # Multiple reassignments of a Mutable variable
+        (
+            "counter_value: Mutable = compute_value()\n"
+            "counter_value = compute_other()\n"
+            "counter_value = compute_third()",
+            [],
+        ),
+        # Bare annotation without value does not lock the name (declare-then-assign)
+        ("counter_value: int\ncounter_value = compute_value()", []),
+        # Augmented assignment is not a reassignment
+        ("counter_value = compute_value()\ncounter_value += compute_other()", []),
+        # For-loop variable does not lock the name
+        ("for one_record in fetch_records():\n    pass\none_record = compute_value()", []),
+        # Assignment in a nested function is a separate scope
+        (
+            "counter_value = compute_value()\n"
+            "def update_counter() -> None:\n"
+            "    counter_value = compute_other()\n"
+            "    apply_value(counter_value)\n"
+            "    apply_value(counter_value)",
+            [],
+        ),
+        # Names declared global are skipped
+        (
+            "counter_value = compute_value()\n"
+            "def update_counter() -> None:\n"
+            "    global counter_value\n"
+            "    counter_value = compute_other()",
+            [],
+        ),
+        # Tuple unpacking locks each name
+        (
+            "first_value, second_value = fetch_pair()\nfirst_value = compute_value()",
+            ["COP017"],
+        ),
+        # Attribute targets are not name rebindings
+        (
+            "def update_counter(self) -> None:\n"
+            "    self.counter_value = compute_value()\n"
+            "    self.counter_value = compute_other()",
+            [],
+        ),
+        # Reassignment via annotated assignment
+        ("counter_value = compute_value()\ncounter_value: int = compute_other()", ["COP017"]),
+        # Mutable annotation on a later assignment does not excuse the reassignment
+        ("counter_value = compute_value()\ncounter_value: Mutable[int] = compute_other()", ["COP017"]),
+        # Reassignments in different functions are separate scopes
+        (
+            "def update_counter() -> None:\n"
+            "    counter_value = compute_value()\n"
+            "    apply_value(counter_value)\n"
+            "    apply_value(counter_value)\n"
+            "def update_another() -> None:\n"
+            "    counter_value = compute_other()\n"
+            "    apply_value(counter_value)\n"
+            "    apply_value(counter_value)",
+            [],
+        ),
+        # Distinct names assigned once each
+        ("counter_value = compute_value()\nanother_value = compute_other()", []),
+    ],
+)
+def test_immutable_variable_validations(input_source: str, expected_output: list[str]) -> None:
+    assert sorted(
+        [
+            one_violation_item[2].split(" ")[0]
+            for one_violation_item in CommunityOfPythonFlake8Plugin(ast.parse(input_source)).run()
+        ]  # noqa: COP011
+    ) == sorted(expected_output)
+
+
+def test_mutable_marker_runtime() -> None:
+    assert cop_extensions.Mutable is not None
+    assert cop_extensions.Mutable[int] is int

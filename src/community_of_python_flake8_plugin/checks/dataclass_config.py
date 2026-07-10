@@ -1,5 +1,6 @@
 from __future__ import annotations
 import ast
+import dataclasses
 import typing
 
 from community_of_python_flake8_plugin.constants import FINAL_CLASS_EXCLUDED_BASES
@@ -66,9 +67,10 @@ def is_model_factory(class_node: ast.ClassDef) -> bool:
 
 
 @typing.final
+@dataclasses.dataclass(kw_only=True, slots=True, frozen=True)
 class DataclassConfigCheck(ast.NodeVisitor):
-    def __init__(self, syntax_tree: ast.AST) -> None:  # noqa: ARG002
-        self.violations: list[Violation] = []
+    syntax_tree: ast.AST
+    violations: list[Violation] = dataclasses.field(default_factory=list)
 
     def visit_ClassDef(self, ast_node: ast.ClassDef) -> None:
         # Skip whitelisted classes and classes that inherit from Exception or other special classes

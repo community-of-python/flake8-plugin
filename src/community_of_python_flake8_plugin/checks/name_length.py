@@ -1,5 +1,6 @@
 from __future__ import annotations
 import ast
+import dataclasses
 import typing
 
 from community_of_python_flake8_plugin.constants import FINAL_CLASS_EXCLUDED_BASES, MIN_NAME_LENGTH
@@ -49,10 +50,10 @@ def check_is_fixture_decorator(decorator: ast.expr) -> bool:
 
 
 @typing.final
+@dataclasses.dataclass(kw_only=True, slots=True, frozen=True)
 class COP004NameLengthCheck(ast.NodeVisitor):
-    def __init__(self, tree: ast.AST) -> None:  # noqa: COP006
-        self.violations: list[Violation] = []
-        self.syntax_tree: typing.Final[ast.AST] = tree
+    syntax_tree: ast.AST
+    violations: list[Violation] = dataclasses.field(default_factory=list)
 
     def visit_AnnAssign(self, ast_node: ast.AnnAssign) -> None:
         if isinstance(ast_node.target, ast.Name):

@@ -1,5 +1,6 @@
 from __future__ import annotations
 import ast
+import dataclasses
 import typing
 
 from community_of_python_flake8_plugin.constants import SCALAR_ANNOTATIONS
@@ -37,10 +38,10 @@ def check_is_scalar_annotation(annotation_node: ast.AST) -> bool:
 
 
 @typing.final
+@dataclasses.dataclass(kw_only=True, slots=True, frozen=True)
 class ScalarAnnotationCheck(ast.NodeVisitor):
-    def __init__(self, syntax_tree: ast.AST) -> None:  # noqa: COP006
-        self.violations: list[Violation] = []
-        self.syntax_tree: typing.Final[ast.AST] = syntax_tree
+    syntax_tree: ast.AST
+    violations: list[Violation] = dataclasses.field(default_factory=list)
 
     def visit_AnnAssign(self, ast_node: ast.AnnAssign) -> None:
         if isinstance(ast_node.target, ast.Name) and (

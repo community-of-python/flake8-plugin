@@ -1,5 +1,6 @@
 from __future__ import annotations
 import ast
+import dataclasses
 import typing
 
 from community_of_python_flake8_plugin.violation_codes import ViolationCodes
@@ -13,10 +14,10 @@ def _is_ignored_target(target_node: ast.expr) -> bool:
 
 
 @typing.final
+@dataclasses.dataclass(kw_only=True, slots=True, frozen=True)
 class COP015ForLoopOnePrefixCheck(ast.NodeVisitor):
-    def __init__(self, syntax_tree: ast.AST) -> None:
-        self.violations: list[Violation] = []
-        self.syntax_tree: typing.Final[ast.AST] = syntax_tree
+    syntax_tree: ast.AST
+    violations: list[Violation] = dataclasses.field(default_factory=list)
 
     def visit_ListComp(self, ast_node: ast.ListComp) -> None:
         # Validate targets in generators (the 'v' in 'for v in lst')

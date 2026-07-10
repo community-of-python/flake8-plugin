@@ -1,5 +1,6 @@
 from __future__ import annotations
 import ast
+import dataclasses
 import typing
 
 from community_of_python_flake8_plugin.violation_codes import ViolationCodes
@@ -46,10 +47,10 @@ def check_has_positional_or_keyword_only_separator(arguments_node: ast.arguments
 
 
 @typing.final
+@dataclasses.dataclass(kw_only=True, slots=True, frozen=True)
 class COP016FunctionKeywordOnlyArgsCheck(ast.NodeVisitor):
-    def __init__(self, syntax_tree: ast.AST) -> None:
-        self.violations: list[Violation] = []
-        self.syntax_tree: typing.Final[ast.AST] = syntax_tree
+    syntax_tree: ast.AST
+    violations: list[Violation] = dataclasses.field(default_factory=list)
 
     def visit_FunctionDef(self, ast_node: ast.FunctionDef) -> None:
         self.validate_function_definition(ast_node)

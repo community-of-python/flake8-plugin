@@ -59,3 +59,12 @@ class ViolationCodes:
     FUNCTION_KEYWORD_ONLY_ARGS = ViolationCodeItem(
         code="COP016", description="Add * or / when defining more than two regular arguments"
     )
+
+    # Variable mutability violations
+    IMMUTABLE_VARIABLE = ViolationCodeItem(
+        code="COP017",
+        description=(
+            "Avoid reassigning variables. If reassignment is intended, annotate the first binding: "
+            "`from cop_extensions import Mutable` and `name: Mutable[T] = ...`"
+        ),
+    )
