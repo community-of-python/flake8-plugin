@@ -81,6 +81,7 @@ VERB_PREFIXES: typing.Final = {
     "set",
     "should",
     "update",
+    "replace",
     "write",
     "obtain",
     "perform",

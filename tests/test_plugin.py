@@ -155,6 +155,11 @@ def test_type_annotation_validations(input_source: str, expected_output: list[st
         ("def _total_value() -> int:\n    return 1", ["COP009"]),
         # No violation: get_ prefix is allowed for sync functions
         ("def get_user_data() -> str:\n    return 'value'", []),
+        # No violation: replacement is a supported operation verb
+        ("def replace_item() -> None:\n    ...", []),
+        ("async def replace_item() -> None:\n    ...", []),
+        ("def _replace_item() -> None:\n    ...", []),
+        ("def __replace_item() -> None:\n    ...", []),
         # COP010: Avoid get_ prefix in async function names
         ("async def get_user_data() -> str:\n    return 'value'", ["COP010"]),
         # COP009: Function name must be a verb (even with mutable params)
