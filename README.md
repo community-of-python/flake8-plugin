@@ -26,6 +26,15 @@ This plugin implements the following code style checks:
 
 ### COP001: import modules instead of many symbols
 
+COP001 is off by default, including when selecting the `COP` prefix. Enable it
+explicitly with `--extend-select=COP001`, `--select=COP001`, or in your Flake8 configuration:
+
+```toml
+[tool.flake8]
+select = ["COP"]
+extend-select = ["COP001"]
+```
+
 Use a module import when importing more than two statically identifiable symbols
 from the same module. Aliases still count; imported submodules do not. Standard
 library imports are handled exclusively by COP002, preserving its exceptions

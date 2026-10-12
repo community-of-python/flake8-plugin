@@ -11,18 +11,17 @@ import typing
 import pytest
 
 from community_of_python_flake8_plugin.checks import module_import_many_names
-from community_of_python_flake8_plugin.plugin import CommunityOfPythonFlake8Plugin
 
 
 SYMBOL_SOURCE: typing.Final = "class FirstClass: pass\nclass SecondClass: pass\nclass ThirdClass: pass\n"
 
 
 def collect_import_codes(*, source_code: str, filename: pathlib.Path) -> list[str]:  # noqa: COP006
-    return [
-        one_result[2].split()[0]
-        for one_result in CommunityOfPythonFlake8Plugin(ast.parse(source_code), str(filename)).run()
-        if one_result[2].startswith("COP001")
-    ]
+    check_instance: typing.Final = module_import_many_names.ModuleImportManyNamesCheck(
+        syntax_tree=ast.parse(source_code), filename=str(filename)
+    )
+    check_instance.visit(check_instance.syntax_tree)
+    return [one_violation.violation_code.code for one_violation in check_instance.violations]
 
 
 @pytest.mark.parametrize(
@@ -208,7 +207,14 @@ def test_compare_flake8_entrypoints(tmp_path: pathlib.Path, source_layout: str) 
     # Run outside the project so filename-based roots are exercised as well.
     for one_command in ([str(console_path)], [sys.executable, "-m", "flake8"]):
         completed_process = subprocess.run(  # noqa: S603
-            [*one_command, "--isolated", "--select=COP001", "--jobs=1", str(consumer_path)],
+            [
+                *one_command,
+                "--isolated",
+                "--select=COP001",
+                "--extend-select=COP001",
+                "--jobs=1",
+                str(consumer_path),
+            ],
             cwd=tmp_path,
             env=runtime_environment,
             check=False,
@@ -219,3 +225,34 @@ def test_compare_flake8_entrypoints(tmp_path: pathlib.Path, source_layout: str) 
         assert "COP001" in completed_process.stdout
         command_outputs.append(completed_process.stdout)
     assert command_outputs[0] == command_outputs[1]
+
+
+@pytest.mark.parametrize("opt_in_mode", ["disabled", "cli", "config", "exact-select"])
+def test_require_explicit_opt_in(tmp_path: pathlib.Path, opt_in_mode: str) -> None:
+    (tmp_path / "fixture_module.py").write_text(SYMBOL_SOURCE)
+    consumer_path: typing.Final = tmp_path / "consumer.py"
+    consumer_path.write_text(
+        "from fixture_module import FirstClass, SecondClass, ThirdClass\nasync def get_something(): pass\n"
+    )
+    flake8_arguments: typing.Final = [
+        "--select=COP001" if opt_in_mode == "exact-select" else "--select=COP",
+        "--jobs=1",
+        str(consumer_path),
+    ]
+    if opt_in_mode == "config":
+        (tmp_path / "pyproject.toml").write_text('[tool.flake8]\nselect = ["COP"]\nextend-select = ["COP001"]\n')
+    else:
+        flake8_arguments.append("--isolated")
+        if opt_in_mode == "cli":
+            flake8_arguments.append("--extend-select=COP001")
+    completed_process: typing.Final = subprocess.run(  # noqa: S603
+        [sys.executable, "-m", "flake8", *flake8_arguments],
+        cwd=tmp_path,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert completed_process.returncode == 1, completed_process.stderr
+    if opt_in_mode != "exact-select":
+        assert "COP010" in completed_process.stdout
+    assert completed_process.stdout.count("COP001") == (0 if opt_in_mode == "disabled" else 1)
