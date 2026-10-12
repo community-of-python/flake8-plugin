@@ -3,12 +3,8 @@ import ast
 import dataclasses
 import typing
 
+from community_of_python_flake8_plugin import utils
 from community_of_python_flake8_plugin.constants import FINAL_CLASS_EXCLUDED_BASES, MIN_NAME_LENGTH
-from community_of_python_flake8_plugin.utils import (
-    check_inherits_from_bases,
-    find_parent_class_definition,
-    find_parent_function_definition,
-)
 from community_of_python_flake8_plugin.violation_codes import ViolationCodes
 from community_of_python_flake8_plugin.violations import Violation
 
@@ -58,7 +54,9 @@ class COP004NameLengthCheck(ast.NodeVisitor):
     def visit_AnnAssign(self, ast_node: ast.AnnAssign) -> None:
         if isinstance(ast_node.target, ast.Name):
             self.validate_name_length(
-                ast_node.target.id, ast_node, parent_class=find_parent_class_definition(self.syntax_tree, ast_node)
+                ast_node.target.id,
+                ast_node,
+                parent_class=utils.find_parent_class_definition(self.syntax_tree, ast_node),
             )
         self.generic_visit(ast_node)
 
@@ -66,17 +64,17 @@ class COP004NameLengthCheck(ast.NodeVisitor):
         for one_target in ast_node.targets:
             if isinstance(one_target, ast.Name):
                 self.validate_name_length(
-                    one_target.id, ast_node, parent_class=find_parent_class_definition(self.syntax_tree, ast_node)
+                    one_target.id, ast_node, parent_class=utils.find_parent_class_definition(self.syntax_tree, ast_node)
                 )
         self.generic_visit(ast_node)
 
     def visit_FunctionDef(self, ast_node: ast.FunctionDef) -> None:
-        self.validate_function_name(ast_node, find_parent_class_definition(self.syntax_tree, ast_node))
+        self.validate_function_name(ast_node, utils.find_parent_class_definition(self.syntax_tree, ast_node))
         self.validate_function_args(ast_node)
         self.generic_visit(ast_node)
 
     def visit_AsyncFunctionDef(self, ast_node: ast.AsyncFunctionDef) -> None:
-        self.validate_function_name(ast_node, find_parent_class_definition(self.syntax_tree, ast_node))
+        self.validate_function_name(ast_node, utils.find_parent_class_definition(self.syntax_tree, ast_node))
         self.validate_function_args(ast_node)
         self.generic_visit(ast_node)
 
@@ -206,13 +204,13 @@ class COP004NameLengthCheck(ast.NodeVisitor):
         if (
             parent_class
             and isinstance(ast_node, (ast.AnnAssign, ast.Assign))
-            and check_inherits_from_bases(parent_class, FINAL_CLASS_EXCLUDED_BASES)
+            and utils.check_inherits_from_bases(parent_class, FINAL_CLASS_EXCLUDED_BASES)
         ):
             return
 
         if len(identifier) < MIN_NAME_LENGTH:
             # Determine if this is an attribute (inside a class but not in a method) or variable
-            parent_function: typing.Final = find_parent_function_definition(self.syntax_tree, ast_node)
+            parent_function: typing.Final = utils.find_parent_function_definition(self.syntax_tree, ast_node)
 
             # It's an attribute only if it's in a class but NOT in a function/method
             is_attribute: typing.Final = parent_class is not None and parent_function is None
@@ -234,7 +232,7 @@ class COP004NameLengthCheck(ast.NodeVisitor):
             return
         if check_is_ignored_name(ast_node.name):
             return
-        if parent_class and check_inherits_from_bases(parent_class, FINAL_CLASS_EXCLUDED_BASES):
+        if parent_class and utils.check_inherits_from_bases(parent_class, FINAL_CLASS_EXCLUDED_BASES):
             return
         if check_is_pytest_fixture(ast_node):
             return

@@ -71,6 +71,7 @@ lines-after-imports = 2
 strict = true
 
 [tool.flake8]
+extend-select = ["COP001"]
 select = ["COP"]
 exclude = [".venv"]
 show-source = true

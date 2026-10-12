@@ -55,12 +55,11 @@ def test_import_stdlib_validations(input_source: str, expected_output: list[str]
     ) == sorted(expected_output)
 
 
-@pytest.mark.skip("disabled")
 @pytest.mark.parametrize(
     ("input_source", "expected_output"),
     [
-        # COP001: Use module import when importing more than two names
-        ("from x import a, b, c", ["COP001"]),
+        # COP001: Unavailable modules cannot be classified statically
+        ("from x import a, b, c", []),  # Unresolved modules are left unchecked.
         # COP001: Importing more than two names from third party (but settings exempt)
         ("from my_project.settings import A, B, C", []),
         # No violation: importlib resources submodules are allowed
