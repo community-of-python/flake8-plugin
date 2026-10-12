@@ -6,6 +6,7 @@ import pkgutil
 import typing
 
 import community_of_python_flake8_plugin.checks as checks_module
+from community_of_python_flake8_plugin.checks import module_import_many_names
 
 
 if typing.TYPE_CHECKING:
@@ -16,7 +17,8 @@ if typing.TYPE_CHECKING:
 
 
 class PluginCheckProtocol(typing.Protocol):
-    violations: list[Violation]
+    @property
+    def violations(self) -> list[Violation]: ...
 
     def __init__(self, *, syntax_tree: ast.AST) -> None: ...
     def visit(self, node: ast.AST) -> None: ...  # noqa: COP007,COP006,COP012
@@ -27,8 +29,9 @@ class CommunityOfPythonFlake8Plugin:
     name: typing.Final[str] = str(pathlib.Path(__file__).parent.name)  # noqa: COP004
     version: typing.Final[str] = importlib.metadata.version(name)  # noqa: COP004
 
-    def __init__(self, tree: ast.AST) -> None:  # noqa: COP006
+    def __init__(self, tree: ast.AST, filename: str = "stdin") -> None:  # noqa: COP006
         self.ast_syntax_tree: typing.Final[ast.AST] = tree
+        self.source_filename: typing.Final = filename
 
     def run(self) -> Iterable[tuple[int, int, str, type[object]]]:  # noqa: COP007
         for one_check_instance in self._collect_checks():
@@ -48,7 +51,14 @@ class CommunityOfPythonFlake8Plugin:
             for one_attribute_name in dir(imported_module):
                 attribute = getattr(imported_module, one_attribute_name)
                 if isinstance(attribute, type) and one_attribute_name.endswith("Check") and hasattr(attribute, "visit"):
-                    check_instance = attribute(syntax_tree=self.ast_syntax_tree)
+                    check_constructor = typing.cast("type[PluginCheckProtocol]", attribute)
+                    check_instance: PluginCheckProtocol = (
+                        module_import_many_names.ModuleImportManyNamesCheck(
+                            syntax_tree=self.ast_syntax_tree, filename=self.source_filename
+                        )
+                        if attribute is module_import_many_names.ModuleImportManyNamesCheck
+                        else check_constructor(syntax_tree=self.ast_syntax_tree)
+                    )
                     check_instance.visit(self.ast_syntax_tree)
                     checks_collection.append(check_instance)
         return checks_collection
